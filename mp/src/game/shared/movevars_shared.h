@@ -67,9 +67,24 @@ extern ConVar sv_wallrun_look_delay;
 extern ConVar sv_wallrun_lookness;
 extern ConVar sv_wallrun_stick_angle;
 extern ConVar sv_wallrun_corner_stick_angle;
-extern ConVar sv_slide_speed_boost;
 extern ConVar sv_coyote_time;
-extern ConVar sv_slide_time;
 extern ConVar sv_slide_lock;
+extern ConVar sv_slide_required_start_speed;
+extern ConVar sv_slide_stop_speed;
+extern ConVar sv_slide_max_stop_speed;
+extern ConVar sv_slide_want_to_stop_decel;
+extern ConVar sv_slide_max_angle_dot;
+extern ConVar sv_slide_speed_boost;
+extern ConVar sv_slide_speed_boost_cap;
+extern ConVar sv_slide_boost_cooldown;
+extern ConVar sv_slide_jump_height;
+extern ConVar sv_slide_accel;
+extern ConVar sv_slide_decel;
+extern ConVar sv_slide_velocity_decay;
+extern ConVar sv_slide_step_velocity_reduction;
+extern ConVar sv_slide_fov_scale;
+extern ConVar sv_slide_fov_lerp_in_time;
+extern ConVar sv_slide_fov_lerp_out_time;
+
 
 #endif // MOVEVARS_SHARED_H

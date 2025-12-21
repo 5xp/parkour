@@ -119,21 +119,106 @@ MAKE_TOGGLE_CONVAR(sv_duck_collision_fix, "1", FCVAR_MAPPING, "Fixes headbugs by
 MAKE_TOGGLE_CONVAR(sv_ground_trigger_fix, "1", FCVAR_MAPPING, "Fixes being able to jump off the ground if grounded with a trigger under the player (bounces and jumpbugs). 1 = ON, 0 = OFF.\n");
 MAKE_TOGGLE_CONVAR(sv_edge_fix, "1", FCVAR_MAPPING, "Makes edgebugs more consistent and allows for bunnyhopping instead of edgebugging. 1 = ON, 0 = OFF.\n");
 
-
-#define DEFAULT_JUMP_HEIGHT_STRING "50.0"
-#define DEFAULT_SLIDE_TIME_STRING "2000.0" 
-#define DEFAULT_SLIDE_SPEED_BOOST_STRING "75.0"
 #define DEFAULT_WALLRUN_TIME_STRING "2000.0"
 #define DEFAULT_WALLRUN_SPEED_STRING "300.0"
 #define DEFAULT_WALLRUN_BOOST_STRING "60.0"
 
-ConVar sv_slide_time("sv_slide_time", DEFAULT_SLIDE_TIME_STRING, FCVAR_NOTIFY | FCVAR_REPLICATED, "Powerslide time.");
+ConVar 
+sv_slide_required_start_speed(
+	"sv_slide_required_start_speed", 
+	"200.0",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,    
+	"Required speed to start a slide.");
+ConVar 
+sv_slide_stop_speed(
+	"sv_slide_stop_speed", 
+	"125.0",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,    
+	"Falling under this speed will end a slide.");
+ConVar 
+sv_slide_max_stop_speed(
+	"sv_slide_max_stop_speed", 
+	"350.0",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,    
+	"Slide may not end while speed is above this.");
+ConVar 
+sv_slide_want_to_stop_decel(
+	"sv_slide_want_to_stop_decel", 
+	"350.0",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,    
+	"Deceleration is replaced with this when trying to stand up during a slide when over sv_slide_max_stop_speed.");
+ConVar 
+sv_slide_max_angle_dot(
+	"sv_slide_max_angle_dot", 
+	"0.6",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,    
+	"Cosine of max angle from forward that you can slide when sprinting.");
 ConVar
 sv_slide_speed_boost(
 	"sv_slide_speed_boost",
-	DEFAULT_SLIDE_SPEED_BOOST_STRING,
+	"150.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Speed boost for powerslide.");
+ConVar
+sv_slide_speed_boost_cap(
+	"sv_slide_speed_boost_cap",
+	"400.0",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"");
+ConVar
+sv_slide_boost_cooldown(
+	"sv_slide_boost_cooldown",
+	"2.0",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Amount of time between slides until a boost is allowed.");
+ConVar
+sv_slide_jump_height(
+	"sv_slide_jump_height",
+	"50.0",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Jump height while sliding.");
+ConVar
+sv_slide_accel(
+	"sv_slide_accel",
+	"20.0", // TODO: figure out this value
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Acceleration from input while sliding.");
+ConVar
+sv_slide_decel(
+	"sv_slide_decel",
+	"50.0",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Linear amount of deceleration while sliding.");
+ConVar
+sv_slide_velocity_decay(
+	"sv_slide_velocity_decay",
+	"0.7",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Proportion of velocity kept per second while sliding.");
+ConVar
+sv_slide_step_velocity_reduction(
+	"sv_slide_step_velocity_reduction",
+	"10.0",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Amount of speed to lose per unit stepped");
+ConVar
+sv_slide_fov_scale(
+	"sv_slide_fov_scale",
+	"1.1",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Max FOV scale while sliding");
+ConVar
+sv_slide_fov_lerp_in_time(
+	"sv_slide_fov_lerp_in_time",
+	"0.25",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Duration over which FOV will be lerped to max while sliding");
+ConVar
+sv_slide_fov_lerp_out_time(
+	"sv_slide_fov_lerp_out_time",
+	"0.25",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Duration over which FOV will be lerped to normal after sliding");
 ConVar
 sv_wallrun_time(
 	"sv_wallrun_time",
