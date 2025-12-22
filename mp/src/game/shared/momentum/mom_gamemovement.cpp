@@ -3278,34 +3278,32 @@ void CMomentumGameMovement::PowerSlideFriction()
     if (speed < 0.1f)
         return;
 
-    float drop = 0.0f;
+    float decel = sv_slide_decel.GetFloat();
 
-    if (ShouldApplyGroundFriction())
+    // Trying to stand up - apply more decel
+    if (!(mv->m_nButtons & IN_DUCK) && speed > sv_slide_max_stop_speed.GetFloat())
     {
-        // For wallrunning, this might need to be revisited. Wallrunning on steep
-        // rock walls is weirdly slow, and I think it might be because those surfaces
-        // have low friction to stop you standing on them. So it might be better to
-        // ignore surface info and just assume full friction when wallrunning.
-        float friction = 0.4f * player->m_surfaceFriction;
-
-        // Add the amount to the drop amount.
-        drop += speed * friction * gpGlobals->frametime;
+        decel = sv_slide_want_to_stop_decel.GetFloat();
     }
 
-    float newspeed = speed - drop;
+    float decay = min(1.f, sv_slide_velocity_decay.GetFloat());
+    float decayScale = pow(decay, gpGlobals->frametime);
+    velocity.x *= decayScale;
+    velocity.y *= decayScale;
 
-    if (newspeed < 0)
-        newspeed = 0;
+    speed = VectorLength(velocity);
+    float drop = decel * gpGlobals->frametime;
+    float newSpeed = speed - drop;
 
-    if (newspeed != speed)
-    {
-        // Determine proportion of old speed we are using.
-        newspeed /= speed;
-        // Adjust velocity according to proportion.
-        VectorScale(velocity, newspeed, velocity);
+    if (speed < 0.1f)
+        return;
+
+    if (newSpeed < 0)
+        newSpeed = 0;
+
+    if (newSpeed != speed) {
+        VectorScale(velocity, newSpeed / speed, velocity);
     }
-
-    mv->m_outWishVel -= (1.f - newspeed) * velocity;
 
     mv->m_vecVelocity.x = velocity.x;
     mv->m_vecVelocity.y = velocity.y;
