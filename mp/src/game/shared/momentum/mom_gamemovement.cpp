@@ -765,6 +765,9 @@ float CMomentumGameMovement::GetPlayerGravity()
     if (g_pGameModeSystem->IsTF2BasedMode())
         return BaseClass::GetPlayerGravity();
 
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+        return sv_gravity_scale.GetFloat();
+
     // We otherwise don't mind if player gravity is set to 0
     return player->GetGravity();
 }

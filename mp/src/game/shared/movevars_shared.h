@@ -69,6 +69,7 @@ extern ConVar sv_wallrun_stick_angle;
 extern ConVar sv_wallrun_corner_stick_angle;
 extern ConVar sv_coyote_time;
 extern ConVar sv_slide_lock;
+extern ConVar sv_gravity_scale;
 extern ConVar sv_slide_required_start_speed;
 extern ConVar sv_slide_stop_speed;
 extern ConVar sv_slide_max_stop_speed;

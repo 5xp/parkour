@@ -122,7 +122,12 @@ MAKE_TOGGLE_CONVAR(sv_edge_fix, "1", FCVAR_MAPPING, "Makes edgebugs more consist
 #define DEFAULT_WALLRUN_TIME_STRING "2000.0"
 #define DEFAULT_WALLRUN_SPEED_STRING "300.0"
 #define DEFAULT_WALLRUN_BOOST_STRING "60.0"
-
+ConVar 
+sv_gravity_scale(
+	"sv_gravity_scale", 
+	"0.75",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,    
+	"How affected the player is by gravity.");
 ConVar 
 sv_slide_required_start_speed(
 	"sv_slide_required_start_speed", 
