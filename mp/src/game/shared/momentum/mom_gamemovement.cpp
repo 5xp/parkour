@@ -1496,55 +1496,7 @@ bool CMomentumGameMovement::CheckJumpButton()
     // MOM_TODO: This has AHOP bits still!!! Pull important bits out and let's not allow accelerated speed gain!
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
     {
-        Vector vecForward;
-        AngleVectors(mv->m_vecViewAngles, &vecForward);
-        vecForward.z = 0;
-        VectorNormalize(vecForward);
-
-        // We give a certain percentage of the current forward movement as a bonus to the jump speed.  That bonus is clipped
-        // to not accumulate over time.
-        float flSpeedBoostPerc = (!m_pPlayer->m_bIsSprinting && !player->m_Local.m_bDucked) ? 0.5f : 0.1f;
-        if (m_pPlayer->m_nWallRunState > WALLRUN_NOT)
-        {
-            flSpeedBoostPerc = sv_wallrun_jump_boost.GetFloat();
-        }
-
-        float flSpeedAddition = fabsf(mv->m_flForwardMove * flSpeedBoostPerc);
-
-        float flMaxSpeed = mv->m_flMaxSpeed + (mv->m_flMaxSpeed * flSpeedBoostPerc);
-        if (m_pPlayer->m_bIsPowerSliding)
-            flMaxSpeed += sv_slide_speed_boost.GetFloat();
-
-        float flNewSpeed = (flSpeedAddition + mv->m_vecVelocity.Length2D());
-
-        const bool bNewSpeedOverMax = flNewSpeed > flMaxSpeed;
-        // If we're over the maximum, we want to only boost as much as will get us to the goal speed,
-        // with lots of special exceptions for Parkour
-        if (bNewSpeedOverMax &&
-            !m_pPlayer->m_bIsPowerSliding &&
-            m_pPlayer->m_nWallRunState == WALLRUN_NOT &&
-            m_pPlayer->m_nAirJumpState != AIRJUMP_NOW &&
-            !bCoyoteJump)
-        {
-            flSpeedAddition -= flNewSpeed - flMaxSpeed;
-        }
-
-        if (m_pPlayer->m_nWallRunState == WALLRUN_JUMPING || bCoyoteJump)
-        {
-            // A wallrun jump is allowed to take them over the max speed, but
-            // acceleration should be limited still
-            flSpeedAddition = MIN(flSpeedAddition, sv_wallrun_jump_boost.GetFloat() * sv_wallrun_speed.GetFloat());
-
-            //Msg( "Adding speed in jump\n" );
-        }
-
-        if (mv->m_flForwardMove < 0.0f)
-            flSpeedAddition *= -1.0f;
-
         const auto oldspeed = mv->m_vecVelocity.Length();
-
-        // Add it on
-        VectorAdd((vecForward * flSpeedAddition), mv->m_vecVelocity, mv->m_vecVelocity);
 
         if (m_pPlayer->m_nAirJumpState == AIRJUMP_NOW)
         {
