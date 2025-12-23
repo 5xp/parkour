@@ -253,6 +253,11 @@ void CMomentumGameMovement::WalkMove()
         wishspeed = mv->m_flMaxSpeed;
     }
 
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR) && player->m_Local.m_bDucked)
+    {
+        wishspeed = PK_CROUCH_SPEED;
+    }
+
     float oldspeed = mv->m_vecVelocity.Length2D();
 
     // Set pmove velocity

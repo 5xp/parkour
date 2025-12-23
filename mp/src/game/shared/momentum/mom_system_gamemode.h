@@ -182,6 +182,7 @@ public:
 };
 
 // Parkour-specific defines
+#define PK_CROUCH_SPEED     80.0f
 #define PK_NORM_SPEED       162.5f
 #define PK_SPRINT_SPEED     243.0f
 
