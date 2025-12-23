@@ -1433,8 +1433,21 @@ bool CMomentumGameMovement::CheckJumpButton()
 
     // Accelerate upward
     float startz = mv->m_vecVelocity[2];
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+    {
+        float jumpFactor;
+        if (m_pPlayer->m_bIsPowerSliding)
+        {
+            jumpFactor = sqrt(2.0f * sv_slide_jump_height.GetFloat() * sv_gravity.GetFloat());
+        }
+        else
+        {
+            jumpFactor = g_pGameModeSystem->GetGameMode()->GetJumpFactor();
+        }
 
-    if (!g_pGameModeSystem->IsCSBasedMode() && (player->m_Local.m_bDucking ||
+        mv->m_vecVelocity[2] = flGroundFactor * jumpFactor;
+    }
+    else if (!g_pGameModeSystem->IsCSBasedMode() && (player->m_Local.m_bDucking ||
                                                 player->GetFlags() & FL_DUCKING ||
                                                 m_pPlayer->m_nAirJumpState == AIRJUMP_NOW))
     {
