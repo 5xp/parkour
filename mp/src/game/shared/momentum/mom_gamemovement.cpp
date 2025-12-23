@@ -898,22 +898,6 @@ void CMomentumGameMovement::DoDuck(int iButtonsPressed)
 
     float duckTimer = GetDuckTimer();
 
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
-    {
-        float speed = mv->m_vecVelocity.Length2D();
-        if (speed > PK_POWERSLIDE_MIN_SPEED && player->GetGroundEntity() != nullptr &&
-            player->m_Local.m_slideBoostCooldown <= 0 && !bFullyCrouched)
-        {
-            duckTimer = 200.0f;
-
-            Vector velocityDirection = mv->m_vecVelocity;
-            VectorNormalizeFast(velocityDirection);
-
-            Accelerate(velocityDirection, 400.0f, 400.0f);
-            player->m_Local.m_slideBoostCooldown = 2.0f;
-        }
-    }
-
     if (iButtonsPressed & IN_DUCK)
     {
         if (m_pPlayer->m_nWallRunState == WALLRUN_RUNNING)
@@ -3199,61 +3183,43 @@ void CMomentumGameMovement::CheckPowerSlide()
     if (!g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
         return;
 
-    // Only check horizontal speed, don't want to 
-    // powerslide after a steep or vertical fall
-    float speed = mv->m_vecVelocity.Length2D();
-
-    // Dead 
+    // Dead
     if (player->pl.deadflag)
         return;
+    
+    float speed = mv->m_vecVelocity.Length2D();
 
-    if (speed > PK_POWERSLIDE_MIN_SPEED)
+    if (speed < sv_slide_required_start_speed.GetFloat())
+        return;
+
+    m_pPlayer->m_bIsPowerSliding = true;
+
+    // boost speed toward the goal speed but not over
+    if (player->m_Local.m_slideBoostCooldown <= 0)
     {
-        m_pPlayer->m_bIsPowerSliding = true;
-
-        if (player->m_Local.m_slideBoostCooldown <= 0)
+        float speedBoost = sv_slide_speed_boost.GetFloat();
+        float addSpeed = sv_slide_speed_boost_cap.GetFloat() - speed;
+        if (addSpeed > speedBoost)
+            addSpeed = speedBoost;
+        
+        if (addSpeed > 0)
         {
-            Vector velocityDirection = mv->m_vecVelocity;
-            VectorNormalizeFast(velocityDirection);
-
-            Accelerate(velocityDirection, 400, 400);
-
-            player->m_Local.m_slideBoostCooldown = 2;
+            float newSpeed = speed + addSpeed;
+            VectorScale(mv->m_vecVelocity, newSpeed / speed, mv->m_vecVelocity);
         }
-        // Give speed boost
-        // float newspeed = speed + sv_slide_speed_boost.GetFloat();
-        // float maxboostspeed = sv_maxspeed.GetFloat(); // don't boost beyond this speed if restrictions on
+    }
+    player->m_Local.m_slideBoostCooldown = sv_slide_boost_cooldown.GetFloat() * 1000.f;
 
-        // don't boost speed above max plus boost if we have agreed to abide by certain restrictions
-        /*if (certain_restrictions.GetBool())
-        {
+    m_pPlayer->PlayPowerSlideSound(mv->GetAbsOrigin());
 
-            if (speed > maxboostspeed)
-            {
-                newspeed = speed; // no boost
-            }
-            else if (newspeed > maxboostspeed)
-            {
-                newspeed = maxboostspeed; // only boost up to max
-            }
-        }*/
-
-        //mv->m_vecVelocity.z = 0.0f; // zero out z component of velocity
-        //VectorScale(mv->m_vecVelocity, newspeed / speed, mv->m_vecVelocity);
-
-        m_pPlayer->PlayPowerSlideSound(mv->GetAbsOrigin());
-
-        //player->m_Local.m_vecPunchAngle.Set(PITCH, -2); // shake the view a bit
-
-        // Workaround for bug - if they slide, then jump, then slide on landing
-        // the view stays at standing height from the second time onwards.
-        // Only happens when using toggle duck. For now, just override it
-        if ((player->m_Local.m_flDuckJumpTime == 0.0f) &&
-            (fabsf(player->GetViewOffset().z - GetPlayerViewOffset(true).z) > 0.1f))
-        {
-            // set the eye height to the non-ducked height
-            SetDuckedEyeOffset( /*duckFraction=*/1.0f);
-        }
+    // Workaround for bug - if they slide, then jump, then slide on landing
+    // the view stays at standing height from the second time onwards.
+    // Only happens when using toggle duck. For now, just override it
+    if ((player->m_Local.m_flDuckJumpTime == 0.0f) &&
+        (fabsf(player->GetViewOffset().z - GetPlayerViewOffset(true).z) > 0.1f))
+    {
+        // set the eye height to the non-ducked height
+        SetDuckedEyeOffset( /*duckFraction=*/1.0f);
     }
 }
 

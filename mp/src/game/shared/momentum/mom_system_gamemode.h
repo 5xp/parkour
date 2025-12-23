@@ -183,14 +183,11 @@ public:
 
 // Parkour-specific defines
 #define PK_NORM_SPEED       162.5f
-#define PK_SPRINT_SPEED     242.5f
+#define PK_SPRINT_SPEED     243.0f
 
-#define PK_POWERSLIDE_MIN_SPEED (PK_NORM_SPEED + 5.0f) // must be going faster than this to powerslide
 #define PK_WALLRUN_MAX_Z        20.0f
 #define PK_WALLRUN_MIN_Z        -50.0f
 
-#define PK_SLIDE_TIME           2000.0f // in ms
-#define PK_SLIDE_SPEED_BOOST    75.0f
 #define PK_WALLRUN_TIME         2000.0f
 #define PK_WALLRUN_SPEED        300.0f
 #define PK_WALLRUN_BOOST        60.0f
