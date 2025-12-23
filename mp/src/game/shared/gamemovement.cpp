@@ -1744,7 +1744,9 @@ void CGameMovement::AirAccelerate( Vector& wishdir, float wishspeed, float accel
 		return;
 
 	// Determine acceleration speed after acceleration
-	accelspeed = accel * wishspeed * gpGlobals->frametime * player->m_surfaceFriction;
+	accelspeed = accel * gpGlobals->frametime;
+    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+        accelspeed *= wishspeed * player->m_surfaceFriction;
 
 	// Cap it
 	if (accelspeed > addspeed)
@@ -1809,6 +1811,10 @@ void CGameMovement::AirMove( void )
 	VectorSubtract( mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity );
 }
 
+float CGameMovement::GetAirSpeedCap(void)
+{
+	return sv_airspeed_cap.GetFloat();
+}
 
 bool CGameMovement::CanAccelerate()
 {

@@ -23,6 +23,7 @@ extern ConVar sv_noclipspeed_duck_multiplier;
 extern ConVar sv_noclipspeed_sprint_multiplier;
 extern ConVar sv_maxspeed;
 extern ConVar sv_accelerate;
+extern ConVar sv_airspeed_cap;
 extern ConVar sv_airaccelerate;
 extern ConVar sv_wateraccelerate;
 extern ConVar sv_waterfriction;
