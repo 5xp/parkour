@@ -948,7 +948,7 @@ void CMomentumGameMovement::DoDuck(int iButtonsPressed)
 
         //MOM_TODO: Fzzy's original code replaces both GetTimeToDuck()s here with (duckTimer / 1000.0f) ... is that correct?
 
-        if (duckseconds > GetTimeToDuck() || (!bIsSliding && bInAir))
+        if (duckseconds >= GetTimeToDuck() || (!bIsSliding && bInAir))
         {
             FinishDuck();
         }
