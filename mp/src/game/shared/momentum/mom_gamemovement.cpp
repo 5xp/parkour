@@ -914,9 +914,18 @@ void CMomentumGameMovement::DoDuck(int iButtonsPressed)
             player->m_Local.m_flDucktime = duckTimer;
             player->m_Local.m_bDucking = true;
 
-            if (!bInAir)
+            if (m_pPlayer->m_bIsSprinting && !bInAir && (mv->m_flForwardMove || mv->m_flSideMove))
             {
-                CheckPowerSlide();
+                Vector wishdir;
+                for (int i = 0; i < 3; i++)
+                    wishdir[i] = m_vecForward[i] * mv->m_flForwardMove + m_vecRight[i] * mv->m_flSideMove;
+
+                VectorNormalize(wishdir);
+                Vector velDir = mv->m_vecVelocity.Normalized();
+                
+                // wishdir must be pointing in roughly the same direction as velocity to slide on ground
+                if (velDir.Dot(wishdir) >= sv_slide_max_angle_dot.GetFloat())
+                    CheckPowerSlide();
             }
         }
         else if (player->m_Local.m_bDucking)
@@ -966,10 +975,8 @@ void CMomentumGameMovement::DoUnduck(int iButtonsReleased)
     const bool bInAir = player->GetGroundEntity() == nullptr;
 
     // Our speed is too high - prevent unduck
-    Vector velocity = mv->m_vecVelocity;
-    velocity.z = 0.0f;
     float stopSpeed = sv_slide_max_stop_speed.GetFloat();
-    if (m_pPlayer->m_bIsPowerSliding && velocity.LengthSqr() > stopSpeed * stopSpeed)
+    if (m_pPlayer->m_bIsPowerSliding && mv->m_vecVelocity.Length2DSqr() > stopSpeed * stopSpeed)
         return;
 
     // Try to unduck unless automovement is not allowed
@@ -1995,6 +2002,10 @@ void CMomentumGameMovement::FullWalkMove()
             }
         }
 
+        float stopSpeed = sv_slide_stop_speed.GetFloat();
+        if (m_pPlayer->m_bIsPowerSliding && mv->m_vecVelocity.Length2DSqr() < stopSpeed * stopSpeed)
+            EndPowerSlide();
+
         // Make sure velocity is valid.
         CheckVelocity();
 
@@ -2361,12 +2372,6 @@ void CMomentumGameMovement::AirMove()
     }
 
     BaseClass::AirMove();
-
-    // In air, so must have slid over a ledge
-    if (m_pPlayer->m_bIsPowerSliding)
-    {
-        EndPowerSlide();
-    }
 
     if (!(mv->m_nButtons & IN_DUCK) && (sv_wallrun_anticipation.GetInt() >= 1))
     {
