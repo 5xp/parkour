@@ -981,6 +981,13 @@ void CMomentumGameMovement::DoUnduck(int iButtonsReleased)
     const bool bIsSliding = m_pPlayer->m_CurrentSlideTrigger != nullptr;
     const bool bInAir = player->GetGroundEntity() == nullptr;
 
+    // Our speed is too high - prevent unduck
+    Vector velocity = mv->m_vecVelocity;
+    velocity.z = 0.0f;
+    float stopSpeed = sv_slide_max_stop_speed.GetFloat();
+    if (m_pPlayer->m_bIsPowerSliding && velocity.LengthSqr() > stopSpeed * stopSpeed)
+        return;
+
     // Try to unduck unless automovement is not allowed
     // NOTE: When not onground, you can always unduck
     if (player->m_Local.m_bAllowAutoMovement || (!bIsSliding && bInAir))
