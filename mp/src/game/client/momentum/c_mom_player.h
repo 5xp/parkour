@@ -95,7 +95,11 @@ public:
     const SurfInt& GetInteraction(int index) const;
     bool SetLastInteraction(const trace_t &tr, const Vector &velocity, SurfInt::Type type);
     void UpdateLastAction(SurfInt::Action action);
-
+    
+    // Parkour view tilt / fov scaling
+    virtual float GetFOV(void) override;
+    virtual void CalcViewRoll(QAngle &eyeAngles) override;
+    
     // Mobility sound functions
     void PlayStepSound(const Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force) override;
     virtual void PlayAirjumpSound(const Vector &vecOrigin);
@@ -110,7 +114,9 @@ public:
 private:
     // Mobility mod (parkour)
     bool m_bWasSprinting;
-    bool m_bIsPowerSliding;
+    CNetworkVar(bool, m_bIsPowerSliding);
+    CNetworkVar(bool, m_bDoFOVScale);
+    float m_flFOVScaleFrac;
     WallRunState m_nWallRunState;
     Vector m_vecWallNorm;
     float m_flAutoViewTime; // if wallrunning, when should start adjusting the view 

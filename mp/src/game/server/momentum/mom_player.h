@@ -292,7 +292,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     virtual void PlayWallRunSound(const Vector &vecOrigin);
     virtual void StopWallRunSound();
 
-    bool m_bIsPowerSliding;
+    CNetworkVar(bool, m_bIsPowerSliding);
+    CNetworkVar(bool, m_bDoFOVScale);
     WallRunState m_nWallRunState;
     Vector m_vecWallNorm;
     float m_flAutoViewTime; // if wallrunning, when should start adjusting the view 

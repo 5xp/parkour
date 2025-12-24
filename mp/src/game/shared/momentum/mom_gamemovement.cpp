@@ -1439,6 +1439,7 @@ bool CMomentumGameMovement::CheckJumpButton()
         if (m_pPlayer->m_bIsPowerSliding)
         {
             jumpFactor = sqrt(2.0f * sv_slide_jump_height.GetFloat() * sv_gravity.GetFloat());
+            m_pPlayer->m_bDoFOVScale = false;
         }
         else
         {
@@ -3182,6 +3183,8 @@ void CMomentumGameMovement::CheckPowerSlide()
             float newSpeed = speed + addSpeed;
             VectorScale(mv->m_vecVelocity, newSpeed / speed, mv->m_vecVelocity);
         }
+        
+        m_pPlayer->m_bDoFOVScale = true;
     }
     player->m_Local.m_slideBoostCooldown = sv_slide_boost_cooldown.GetFloat() * 1000.f;
 

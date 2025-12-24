@@ -6,10 +6,13 @@
 #include "c_mom_online_ghost.h"
 
 #include "tier0/memdbgon.h"
+#include "movevars_shared.h"
 
 IMPLEMENT_CLIENTCLASS_DT(C_MomentumPlayer, DT_MOM_Player, CMomentumPlayer)
 RecvPropBool(RECVINFO(m_bIsSprinting)),
 RecvPropBool(RECVINFO(m_bIsWalking)),
+RecvPropBool(RECVINFO(m_bIsPowerSliding)),
+RecvPropBool(RECVINFO(m_bDoFOVScale)),
 RecvPropBool(RECVINFO(m_bHasPracticeMode)),
 RecvPropBool(RECVINFO(m_bPreventPlayerBhop)),
 RecvPropInt(RECVINFO(m_iJumpTick)),
@@ -67,6 +70,8 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_fDuckTimer = 0.0f;
 
     m_bIsPowerSliding = false;
+    m_bDoFOVScale = false;
+    m_flFOVScaleFrac = 0.0f;
     m_nWallRunState = WALLRUN_NOT;
     m_bWasSprinting = false;
 
@@ -111,6 +116,16 @@ bool C_MomentumPlayer::CreateMove(float flInputSampleTime, CUserCmd *pCmd)
 {
     // Bleh... we will wind up needing to access bones for attachments in here.
     C_BaseAnimating::AutoAllowBoneAccess boneaccess(true, true);
+
+    if (m_bIsPowerSliding && m_bDoFOVScale)
+    {
+        m_flFOVScaleFrac += 1.0f / sv_slide_fov_lerp_in_time.GetFloat() * gpGlobals->frametime;
+    }
+    else
+    {
+        m_flFOVScaleFrac -= 1.0f / sv_slide_fov_lerp_out_time.GetFloat() * gpGlobals->frametime;
+    }
+    m_flFOVScaleFrac = clamp(m_flFOVScaleFrac, 0.0f, 1.0f);
 
     return BaseClass::CreateMove(flInputSampleTime, pCmd);
 }
@@ -196,4 +211,15 @@ float C_MomentumPlayer::GetCurrentRunTime()
 uint64 C_MomentumPlayer::GetSteamID()
 {
     return SteamUser() ? SteamUser()->GetSteamID().ConvertToUint64() : 0;
+}
+
+void C_MomentumPlayer::CalcViewRoll(QAngle &eyeAngles)
+{
+    BaseClass::CalcViewRoll(eyeAngles);
+}
+
+float C_MomentumPlayer::GetFOV()
+{
+    float fovScale = Lerp(m_flFOVScaleFrac, 1.0f, sv_slide_fov_scale.GetFloat());
+    return BaseClass::GetFOV() * fovScale;
 }

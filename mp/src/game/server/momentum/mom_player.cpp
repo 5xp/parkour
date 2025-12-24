@@ -137,6 +137,8 @@ CON_COMMAND(mom_strafesync_reset, "Reset the strafe sync. (works only when timer
 IMPLEMENT_SERVERCLASS_ST(CMomentumPlayer, DT_MOM_Player)
 SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"),
 SendPropBool(SENDINFO(m_bIsSprinting)),
+SendPropBool(SENDINFO(m_bIsPowerSliding)),
+SendPropBool(SENDINFO(m_bDoFOVScale)),
 SendPropBool(SENDINFO(m_bIsWalking)),
 SendPropBool(SENDINFO(m_bHasPracticeMode)),
 SendPropBool(SENDINFO(m_bPreventPlayerBhop)),
@@ -256,6 +258,7 @@ CMomentumPlayer::CMomentumPlayer()
     m_bIsSprinting = false;
 
     m_bIsPowerSliding = false;
+    m_bDoFOVScale = false;
     m_nWallRunState = WALLRUN_NOT;
 
     m_nButtonsToggled = 0;
