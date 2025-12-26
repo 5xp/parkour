@@ -3193,6 +3193,10 @@ void CMomentumGameMovement::CheckPowerSlide()
         // set the eye height to the non-ducked height
         SetDuckedEyeOffset( /*duckFraction=*/1.0f);
     }
+
+    // Immediately shrink our hull so we don't hit our heads at the start of a slide
+    player->AddFlag(FL_DUCKING);
+    player->m_Local.m_bDucked = true;
 }
 
 //-----------------------------------------------------------------------------
