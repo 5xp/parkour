@@ -1147,12 +1147,6 @@ void CMomentumGameMovement::FinishDuck()
 #endif
     }
 
-    const bool bInAir = player->GetGroundEntity() == nullptr;
-    if (!bInAir)
-    {
-        CheckPowerSlide();
-    }
-
     // See if we are stuck?
     FixPlayerCrouchStuck(true);
 

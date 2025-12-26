@@ -87,6 +87,10 @@ extern ConVar sv_slide_step_velocity_reduction;
 extern ConVar sv_slide_fov_scale;
 extern ConVar sv_slide_fov_lerp_in_time;
 extern ConVar sv_slide_fov_lerp_out_time;
+extern ConVar sv_slide_viewtilt_increase_speed;
+extern ConVar sv_slide_viewtilt_decrease_speed;
+extern ConVar sv_slide_viewtilt_side;
+extern ConVar sv_slide_viewtilt_player_speed;
 
 
 #endif // MOVEVARS_SHARED_H

@@ -36,6 +36,7 @@ public:
 		m_iv_vecPunchAngleVel.Setup(&m_vecPunchAngleVel.m_Value, LATCH_SIMULATION_VAR);
 		m_iv_vecTargetPunchAngle.Setup(&m_vecTargetPunchAngle.m_Value, LATCH_SIMULATION_VAR);
 		m_flFOVRate = 0;
+		m_vecSlideTilt.Init();
 	}
 
 	unsigned char			m_chAreaBits[MAX_AREA_STATE_BYTES];				// Area visibility flags.
@@ -59,6 +60,7 @@ public:
 	float					m_flWallRunTime;
 	float					m_punchRollOverride;
 	float					m_punchRollOverrideTarget;
+	Vector					m_vecSlideTilt;
 
 	int						m_nStepside;
 	float					m_flFallVelocity;

@@ -226,6 +226,30 @@ sv_slide_fov_lerp_out_time(
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Duration over which FOV will be lerped to normal after sliding");
 ConVar
+sv_slide_viewtilt_increase_speed(
+	"sv_slide_viewtilt_increase_speed",
+	"5",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Speed at which viewtilt while sliding increases to full.");
+ConVar
+sv_slide_viewtilt_decrease_speed(
+	"sv_slide_viewtilt_decrease_speed",
+	"2.5",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Speed at which viewtilt while sliding decreases to zero.");
+ConVar
+sv_slide_viewtilt_side(
+	"sv_slide_viewtilt_side",
+	"15",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Max view tilt while looking to the side while sliding.");
+ConVar
+sv_slide_viewtilt_player_speed(
+	"sv_slide_viewtilt_player_speed",
+	"400",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"View tilt while sliding is at full at this speed.");
+ConVar
 sv_wallrun_time(
 	"sv_wallrun_time",
 	DEFAULT_WALLRUN_TIME_STRING,

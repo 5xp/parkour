@@ -216,6 +216,37 @@ uint64 C_MomentumPlayer::GetSteamID()
 void C_MomentumPlayer::CalcViewRoll(QAngle &eyeAngles)
 {
     BaseClass::CalcViewRoll(eyeAngles);
+
+    Vector velocity = GetAbsVelocity();
+    velocity.z = 0.0f;
+
+    float speed = velocity.Length();
+
+    // more speed -> more tilt
+    float speedFrac = RemapValClamped(speed, sv_slide_stop_speed.GetFloat(), sv_slide_viewtilt_player_speed.GetFloat(), 0.0f, 1.0f);
+    Vector targetTiltVec = m_bIsPowerSliding ? velocity.Normalized() * speedFrac : vec3_origin;
+
+    Vector forward, right, up;
+    AngleVectors(eyeAngles, &forward, &right, &up);
+    Vector left = -right;
+
+    // looking more to the side -> more tilt
+    float angleFrac = DotProduct(m_Local.m_vecSlideTilt, left);
+
+    float approachSpeed = m_bIsPowerSliding && m_Local.m_vecSlideTilt.LengthSqr() < targetTiltVec.LengthSqr()
+        ? sv_slide_viewtilt_increase_speed.GetFloat()
+        : sv_slide_viewtilt_decrease_speed.GetFloat();
+
+    Vector delta = targetTiltVec - m_Local.m_vecSlideTilt;
+    float len = delta.Length();
+    float maxStep = approachSpeed * gpGlobals->frametime;
+    if (!delta.IsZero() && len > maxStep)
+        delta *= maxStep / len;
+    m_Local.m_vecSlideTilt += delta;
+
+    float totalRoll = angleFrac * sv_slide_viewtilt_side.GetFloat();
+
+    eyeAngles[ROLL] += totalRoll;
 }
 
 float C_MomentumPlayer::GetFOV()
