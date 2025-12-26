@@ -117,15 +117,12 @@ bool C_MomentumPlayer::CreateMove(float flInputSampleTime, CUserCmd *pCmd)
     // Bleh... we will wind up needing to access bones for attachments in here.
     C_BaseAnimating::AutoAllowBoneAccess boneaccess(true, true);
 
-    if (m_bIsPowerSliding && m_bDoFOVScale)
-    {
-        m_flFOVScaleFrac += 1.0f / sv_slide_fov_lerp_in_time.GetFloat() * gpGlobals->frametime;
-    }
-    else
-    {
-        m_flFOVScaleFrac -= 1.0f / sv_slide_fov_lerp_out_time.GetFloat() * gpGlobals->frametime;
-    }
-    m_flFOVScaleFrac = clamp(m_flFOVScaleFrac, 0.0f, 1.0f);
+    bool lerpIn = m_bIsPowerSliding && m_bDoFOVScale;
+    float lerpTime = lerpIn
+        ? sv_slide_fov_lerp_in_time.GetFloat()
+        : sv_slide_fov_lerp_out_time.GetFloat();
+    float lerpTo = lerpIn ? 1.0f : 0.0f;
+    m_flFOVScaleFrac = Approach(lerpTo, m_flFOVScaleFrac, 1.0f / lerpTime * gpGlobals->frametime);
 
     return BaseClass::CreateMove(flInputSampleTime, pCmd);
 }
