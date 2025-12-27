@@ -709,12 +709,18 @@ void CMomentumGameMovement::HandleDuckingSpeedCrop()
 
 float CMomentumGameMovement::GetTimeToDuck()
 {
-    return g_pGameModeSystem->IsTF2BasedMode() ? 0.2f : BaseClass::GetTimeToDuck();
+    if (g_pGameModeSystem->IsTF2BasedMode())
+        return 0.2f;
+
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+        return m_pPlayer->m_bIsPowerSliding ? 0.2f : 0.5f;
+
+    return BaseClass::GetTimeToDuck();
 }
 
 float CMomentumGameMovement::GetDuckTimer()
 {
-    return (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR) || g_pGameModeSystem->GameModeIs(GAMEMODE_CONC)) ? 400.0f : BaseClass::GetDuckTimer();
+    return g_pGameModeSystem->GameModeIs(GAMEMODE_CONC) ? 400.0f : BaseClass::GetDuckTimer();
 }
 
 bool CMomentumGameMovement::CanUnduck()
@@ -916,7 +922,7 @@ void CMomentumGameMovement::DoDuck(int iButtonsPressed)
         if (!bFullyCrouched)
         {
             // Use 1 second so super long jump will work
-            player->m_Local.m_flDucktime = duckTimer;
+            const bool bWasDucking = player->m_Local.m_bDucking;
             player->m_Local.m_bDucking = true;
 
             if (m_pPlayer->m_bIsSprinting && !bInAir && (mv->m_flForwardMove || mv->m_flSideMove))
@@ -932,12 +938,36 @@ void CMomentumGameMovement::DoDuck(int iButtonsPressed)
                 if (velDir.Dot(wishdir) >= sv_slide_max_angle_dot.GetFloat())
                     CheckPowerSlide();
             }
+
+            if (!bWasDucking)
+            {
+                player->m_Local.m_flDucktime = duckTimer;
+            }
+            else
+            {
+                Vector vDuckHullMin = GetPlayerMins(true);
+                Vector vStandHullMin = GetPlayerMins(false);
+                float fMore = vDuckHullMin.z - vStandHullMin.z;
+
+                const float duckViewZ = GetPlayerViewOffset(true).z;
+                const float standViewZ = GetPlayerViewOffset(false).z;
+                const float currentViewZ = player->GetViewOffset().z;
+                const float denom = (duckViewZ - fMore) - standViewZ;
+
+                float duckFraction = 0.0f;
+                if (fabsf(denom) > 1e-6f)
+                    duckFraction = (currentViewZ - standViewZ) / denom;
+
+                duckFraction = clamp(duckFraction, 0.0f, 1.0f);
+
+                const float duckTimeMs = GetTimeToDuck() * 1000.0f;
+                player->m_Local.m_flDucktime = duckTimer - (duckFraction * duckTimeMs);
+            }
         }
         else if (player->m_Local.m_bDucking)
         {
             // Invert time if released before fully unducked
             float remainingDuckMilliseconds = (duckTimer - player->m_Local.m_flDucktime) * (GetTimeToDuck() / TIME_TO_UNDUCK);
-
             player->m_Local.m_flDucktime = duckTimer - (GetTimeToDuck() * 1000.0f) + remainingDuckMilliseconds;
         }
     }
@@ -990,7 +1020,7 @@ void CMomentumGameMovement::DoUnduck(int iButtonsReleased)
     {
         if (iButtonsReleased & IN_DUCK)
         {
-            if (player->GetFlags() & FL_DUCKING)
+            if ((player->GetFlags() & FL_DUCKING) && !player->m_Local.m_bDucking)
             {
                 // Use 1 second so super long jump will work
                 player->m_Local.m_flDucktime = GetDuckTimer();
@@ -1025,7 +1055,7 @@ void CMomentumGameMovement::DoUnduck(int iButtonsReleased)
                 float duckseconds = duckmilliseconds / 1000.0f;
 
                 // Finish ducking immediately if duck time is over or not on ground
-                if ((duckseconds > TIME_TO_UNDUCK) || (!bIsSliding && bInAir))
+                if ((duckseconds >= TIME_TO_UNDUCK) || (!bIsSliding && bInAir))
                 {
                     FinishUnDuck();
                 }
