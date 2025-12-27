@@ -1455,6 +1455,20 @@ bool CMomentumGameMovement::CheckJumpButton()
         flGroundFactor = player->m_pSurfaceData->game.jumpFactor;
     }
 
+    // Refund speed boost if we jump while sliding before we finished ducking
+    if (m_pPlayer->m_bIsPowerSliding && m_pPlayer->m_Local.m_bDucking)
+    {
+        Vector velocity = mv->m_vecVelocity;
+        velocity.z = 0.0f;
+        float speed = velocity.Length();
+        float newSpeed = max(0.0f, speed - m_pPlayer->m_flLastSlideBoost);
+        if (speed > 0.0f)
+            VectorScale(velocity, newSpeed / speed, velocity);
+        
+        mv->m_vecVelocity[0] = velocity[0];
+        mv->m_vecVelocity[1] = velocity[1];
+    }
+
     // Accelerate upward
     float startz = mv->m_vecVelocity[2];
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
@@ -3193,17 +3207,19 @@ void CMomentumGameMovement::CheckPowerSlide()
         return;
 
     m_pPlayer->m_bIsPowerSliding = true;
+    m_pPlayer->m_flLastSlideBoost = 0.0f;
 
     // boost speed toward the goal speed but not over
     if (player->m_Local.m_slideBoostCooldown <= 0)
     {
         float speedBoost = sv_slide_speed_boost.GetFloat();
         float addSpeed = sv_slide_speed_boost_cap.GetFloat() - speed;
-        if (addSpeed > speedBoost)
-            addSpeed = speedBoost;
+        addSpeed = clamp(addSpeed, 0.0f, speedBoost);
+
         
         if (addSpeed > 0)
         {
+            m_pPlayer->m_flLastSlideBoost = addSpeed;
             float newSpeed = speed + addSpeed;
             VectorScale(mv->m_vecVelocity, newSpeed / speed, mv->m_vecVelocity);
         }

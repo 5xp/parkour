@@ -294,6 +294,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     CNetworkVar(bool, m_bIsPowerSliding);
     CNetworkVar(bool, m_bDoFOVScale);
+    float m_flLastSlideBoost;
     WallRunState m_nWallRunState;
     Vector m_vecWallNorm;
     float m_flAutoViewTime; // if wallrunning, when should start adjusting the view 

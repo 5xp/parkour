@@ -256,8 +256,8 @@ CMomentumPlayer::CMomentumPlayer()
 
     m_bIsWalking = false;
     m_bIsSprinting = false;
-
     m_bIsPowerSliding = false;
+    m_flLastSlideBoost = 0.0f;
     m_bDoFOVScale = false;
     m_nWallRunState = WALLRUN_NOT;
 

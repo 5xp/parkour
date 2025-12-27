@@ -116,6 +116,7 @@ private:
     bool m_bWasSprinting;
     CNetworkVar(bool, m_bIsPowerSliding);
     CNetworkVar(bool, m_bDoFOVScale);
+    float m_flLastSlideBoost;
     float m_flFOVScaleFrac;
     WallRunState m_nWallRunState;
     Vector m_vecWallNorm;

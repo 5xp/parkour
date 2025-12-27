@@ -70,6 +70,7 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_fDuckTimer = 0.0f;
 
     m_bIsPowerSliding = false;
+    m_flLastSlideBoost = 0.0f;
     m_bDoFOVScale = false;
     m_flFOVScaleFrac = 0.0f;
     m_nWallRunState = WALLRUN_NOT;
