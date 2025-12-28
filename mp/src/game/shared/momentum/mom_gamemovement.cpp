@@ -3280,7 +3280,7 @@ void CMomentumGameMovement::EndPowerSlide()
 //-----------------------------------------------------------------------------
 // Purpose: Called instead of Friction() when powersliding. Ignore
 //          surface friction and just steadily slow down to crawl
-//          speed
+//          speed and apply speedgain from inclined surfaces
 //-----------------------------------------------------------------------------
 void CMomentumGameMovement::PowerSlideFriction()
 {
@@ -3326,6 +3326,14 @@ void CMomentumGameMovement::PowerSlideFriction()
 
     mv->m_vecVelocity.x = velocity.x;
     mv->m_vecVelocity.y = velocity.y;
+
+    // Apply incline gravity
+    Vector up(0.0f, 0.0f, 1.0f);
+    Vector groundNormal = m_pPlayer->GetInteraction(0).trace.plane.normal;
+    float gravityScale = 0.5f * GetCurrentGravity() * GetPlayerGravity() * gpGlobals->frametime;
+    Vector slideForce = groundNormal * up.Dot(groundNormal) * gravityScale;
+    mv->m_vecVelocity.x += slideForce.x;
+    mv->m_vecVelocity.y += slideForce.y;
 }
 
 //-----------------------------------------------------------------------------
