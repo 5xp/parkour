@@ -1699,6 +1699,7 @@ void CMomentumGameMovement::CategorizePosition()
     float flOffset = sv_considered_on_ground.GetFloat();
 
     const Vector bumpOrigin = mv->GetAbsOrigin();
+    const bool bParkourStick = g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR) && player->GetGroundEntity() != nullptr;
 
     point[0] = bumpOrigin[0];
     point[1] = bumpOrigin[1];
@@ -1706,7 +1707,7 @@ void CMomentumGameMovement::CategorizePosition()
 
     float zvel = mv->m_vecVelocity[2];
     bool bMovingUp = zvel > 0.0f;
-    bool bMovingUpRapidly = zvel > NON_JUMP_VELOCITY;
+    bool bMovingUpRapidly = zvel > NON_JUMP_VELOCITY && !bParkourStick;
     float flGroundEntityVelZ = 0.0f;
     if (bMovingUpRapidly)
     {
@@ -2079,6 +2080,21 @@ void CMomentumGameMovement::FullWalkMove()
 
             if (pm.fraction == 1.0f)
                 mv->SetAbsOrigin(vecNewOrigin);
+        }
+
+        // Apply speed reductions when stepping up while sliding
+        if (m_pPlayer->m_bIsPowerSliding && mv->m_outStepHeight > 0.0f)
+        {
+            Vector velocity = mv->m_vecVelocity;
+            velocity.z = 0.0f;
+            float speed = velocity.Length();
+            float newSpeed = max(0.0f, speed - mv->m_outStepHeight * sv_slide_step_velocity_reduction.GetFloat());
+
+            if (speed > 0.0f)
+                VectorScale(velocity, newSpeed / speed, velocity);
+
+            mv->m_vecVelocity[0] = velocity[0];
+            mv->m_vecVelocity[1] = velocity[1];
         }
 
         bool bInAirBefore = player->GetGroundEntity() == nullptr;
