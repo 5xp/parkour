@@ -862,6 +862,16 @@ void CMomentumGameMovement::Duck()
         }
     }
 
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+    {
+        // Speed is too high - force duck key
+        const float stopSpeed = sv_slide_max_stop_speed.GetFloat();
+        if (m_pPlayer->m_bIsPowerSliding && mv->m_vecVelocity.Length2DSqr() > stopSpeed * stopSpeed)
+        {
+            mv->m_nButtons |= IN_DUCK;
+        }
+    }
+
     int buttonsChanged = (mv->m_nOldButtons ^ mv->m_nButtons); // These buttons have changed this frame
     int buttonsPressed = buttonsChanged & mv->m_nButtons;      // The changed ones still down are "pressed"
     int buttonsReleased = buttonsChanged & mv->m_nOldButtons; // The changed ones which were previously down are "released"
@@ -1008,11 +1018,6 @@ void CMomentumGameMovement::DoUnduck(int iButtonsReleased)
 
     const bool bIsSliding = m_pPlayer->m_CurrentSlideTrigger != nullptr;
     const bool bInAir = player->GetGroundEntity() == nullptr;
-
-    // Our speed is too high - prevent unduck
-    float stopSpeed = sv_slide_max_stop_speed.GetFloat();
-    if (m_pPlayer->m_bIsPowerSliding && mv->m_vecVelocity.Length2DSqr() > stopSpeed * stopSpeed)
-        return;
 
     // Try to unduck unless automovement is not allowed
     // NOTE: When not onground, you can always unduck
@@ -3295,7 +3300,7 @@ void CMomentumGameMovement::PowerSlideFriction()
     float decel = sv_slide_decel.GetFloat();
 
     // Trying to stand up - apply more decel
-    if (!(mv->m_nButtons & IN_DUCK) && speed > sv_slide_max_stop_speed.GetFloat())
+    if (!(player->m_nButtons & IN_DUCK) && speed > sv_slide_max_stop_speed.GetFloat())
     {
         decel = sv_slide_want_to_stop_decel.GetFloat();
     }
