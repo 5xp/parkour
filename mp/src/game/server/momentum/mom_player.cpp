@@ -813,22 +813,56 @@ void CMomentumPlayer::HandleSprintAndWalkChanges()
 {
     const int buttonsChanged = m_afButtonPressed | m_afButtonReleased;
 
-    const bool bWantSprint = (CanSprint() && (m_nButtons & IN_SPEED));
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
     {
-        if (m_bIsSprinting == false && bWantSprint && (buttonsChanged & IN_SPEED) && (m_nButtons & IN_FORWARD))
+        Vector2D input(m_flSideMove, m_flForwardMove);
+        if (input.LengthSqr() > 0.0f)
+            input /= MaxSpeed();
+
+        const float sprintThreshold = 0.707f; // 45 degrees
+
+        if (mom_pk_autosprint_enable.GetBool())
         {
-            ToggleSprint(true);
+            // Sprint whenever possible
+            m_bStickySprint = true;
+        }
+        else if (m_nButtons & IN_SPEED)
+        {
+            m_bStickySprint = true;
+
+            // Expire the sticky sprint if we don't input "forward" within 3 seconds
+            m_flStickySprintExpire = gpGlobals->curtime + 3.0f;
+        }
+        else if (m_bStickySprint)
+        {
+            // Are we trying to move backwards or have we stopped moving?
+            const bool bInDeadzone = input.y <= -sprintThreshold || input.IsLengthLessThan(0.6f);
+
+            // Only check deadzone when not fully ducked
+            if (!m_Local.m_bDucked && !bInDeadzone)
+            {
+                if (m_nButtons & IN_DUCK && m_Local.m_bDucking)
+                    m_bStickySprint = false;
+
+                // Immediately expire if input falls outside of the safe zone
+                m_flStickySprintExpire = 0.0f;
+            }
+            else
+            {
+                if (gpGlobals->curtime >= m_flStickySprintExpire)
+                    m_bStickySprint = false;
+            }
         }
 
-        // Do not sprint backwards
-        if (m_bIsSprinting && !(m_nButtons & (IN_FORWARD | IN_MOVELEFT | IN_MOVERIGHT)))
-        {
-            ToggleSprint(false);
-        }
+        const bool bShouldSprint = m_bStickySprint && input.y >= sprintThreshold && CanSprint();
+
+        if (m_bIsSprinting != bShouldSprint)
+            ToggleSprint(bShouldSprint);
     }
     else
     {
+        const bool bWantSprint = (CanSprint() && (m_nButtons & IN_SPEED));
+
         if (m_bIsSprinting != bWantSprint && (buttonsChanged & IN_SPEED))
         {
             // If someone wants to sprint, make sure they've pressed the button to do so. We want to prevent the

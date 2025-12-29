@@ -292,6 +292,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     virtual void PlayWallRunSound(const Vector &vecOrigin);
     virtual void StopWallRunSound();
 
+    bool m_bStickySprint;
+    float m_flStickySprintExpire;
     CNetworkVar(bool, m_bIsPowerSliding);
     CNetworkVar(bool, m_bDoFOVScale);
     float m_flLastSlideBoost;

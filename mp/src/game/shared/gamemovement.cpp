@@ -1181,6 +1181,7 @@ void CGameMovement::FinishMove( void )
 {
 	mv->m_nOldButtons = mv->m_nButtons;
 #if GAME_DLL
+    player->m_flForwardMove = mv->m_flForwardMove;
     player->m_flSideMove = mv->m_flSideMove;
 #endif
 }

@@ -123,6 +123,9 @@ MAKE_TOGGLE_CONVAR(sv_edge_fix, "1", FCVAR_MAPPING, "Makes edgebugs more consist
 #define DEFAULT_WALLRUN_TIME_STRING "2000.0"
 #define DEFAULT_WALLRUN_SPEED_STRING "300.0"
 #define DEFAULT_WALLRUN_BOOST_STRING "60.0"
+
+MAKE_TOGGLE_CONVAR(mom_pk_autosprint_enable, "1", FCVAR_ARCHIVE | FCVAR_USERINFO, "Enable autosprint.");
+
 ConVar 
 sv_gravity_scale(
 	"sv_gravity_scale", 

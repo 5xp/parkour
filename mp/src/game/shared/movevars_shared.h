@@ -48,6 +48,7 @@ extern ConVar sv_duck_collision_fix;
 extern ConVar sv_ground_trigger_fix;
 extern ConVar sv_edge_fix;
 // - - Parkour
+extern ConVar mom_pk_autosprint_enable;
 extern ConVar sv_wallrun_anticipation;
 extern ConVar sv_wallrun_time;
 extern ConVar sv_wallrun_speed;
