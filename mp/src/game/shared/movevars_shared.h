@@ -71,6 +71,7 @@ extern ConVar sv_wallrun_stick_angle;
 extern ConVar sv_wallrun_corner_stick_angle;
 extern ConVar sv_coyote_time;
 extern ConVar sv_slide_lock;
+extern ConVar sv_pk_jump_height;
 extern ConVar sv_gravity_scale;
 extern ConVar sv_slide_required_start_speed;
 extern ConVar sv_slide_stop_speed;
@@ -92,6 +93,9 @@ extern ConVar sv_slide_viewtilt_increase_speed;
 extern ConVar sv_slide_viewtilt_decrease_speed;
 extern ConVar sv_slide_viewtilt_side;
 extern ConVar sv_slide_viewtilt_player_speed;
-
+extern ConVar sv_skip_time;
+extern ConVar sv_skip_speed_reduce;
+extern ConVar sv_skip_speed_retain;
+extern ConVar sv_skip_jump_height_fraction;
 
 #endif // MOVEVARS_SHARED_H

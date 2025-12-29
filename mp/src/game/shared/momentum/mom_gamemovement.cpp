@@ -1428,6 +1428,8 @@ bool CMomentumGameMovement::CheckJumpButton()
             return false;
     }
 
+    const bool bWasGrounded = player->GetGroundEntity() != nullptr;
+
     // In the air now.
     SetGroundEntity(nullptr);
 
@@ -1472,18 +1474,38 @@ bool CMomentumGameMovement::CheckJumpButton()
     float startz = mv->m_vecVelocity[2];
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
     {
-        float jumpFactor;
+        float jumpHeight;
         if (m_pPlayer->m_bIsPowerSliding)
         {
-            jumpFactor = sqrt(2.0f * sv_slide_jump_height.GetFloat() * sv_gravity.GetFloat());
+            jumpHeight = sv_slide_jump_height.GetFloat();
             m_pPlayer->m_bDoFOVScale = false;
         }
         else
         {
-            jumpFactor = g_pGameModeSystem->GetGameMode()->GetJumpFactor();
+            jumpHeight = sv_pk_jump_height.GetFloat();
+        }
+        
+        const float timeSinceLanding =
+            (static_cast<float>(gpGlobals->tickcount - m_pPlayer->m_iLandTick)) * gpGlobals->interval_per_tick;
+
+        if (bWasGrounded && timeSinceLanding < sv_skip_time.GetFloat())
+        {
+            jumpHeight *= sv_skip_jump_height_fraction.GetFloat();
+
+            // Reduce speed to skip_speed_retain without going below
+            Vector velocity = mv->m_vecVelocity;
+            velocity.z = 0.0f;
+            float speed = velocity.Length();
+            float newSpeed = max(sv_skip_speed_retain.GetFloat(), speed - sv_skip_speed_reduce.GetFloat());
+            if (speed > sv_skip_speed_retain.GetFloat())
+                VectorScale(velocity, newSpeed / speed, velocity);
+
+            mv->m_vecVelocity[0] = velocity[0];
+            mv->m_vecVelocity[1] = velocity[1];
         }
 
-        mv->m_vecVelocity[2] = flGroundFactor * jumpFactor;
+        mv->m_vecVelocity[2] =
+            flGroundFactor * sqrt(2.0f * jumpHeight * sv_gravity.GetFloat());
     }
     else if (!g_pGameModeSystem->IsCSBasedMode() && (player->m_Local.m_bDucking ||
                                                 player->GetFlags() & FL_DUCKING ||

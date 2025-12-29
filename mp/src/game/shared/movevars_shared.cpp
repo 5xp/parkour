@@ -126,6 +126,12 @@ MAKE_TOGGLE_CONVAR(sv_edge_fix, "1", FCVAR_MAPPING, "Makes edgebugs more consist
 
 MAKE_TOGGLE_CONVAR(mom_pk_autosprint_enable, "1", FCVAR_ARCHIVE | FCVAR_USERINFO, "Enable autosprint.");
 
+ConVar
+sv_pk_jump_height(
+	"sv_pk_jump_height",
+	"60",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Regular jump height");
 ConVar 
 sv_gravity_scale(
 	"sv_gravity_scale", 
@@ -252,6 +258,30 @@ sv_slide_viewtilt_player_speed(
 	"400",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"View tilt while sliding is at full at this speed.");
+ConVar
+sv_skip_time(
+	"sv_skip_time",
+	"0.1",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Player is considered skipping if they jump within this number of seconds after landing");
+ConVar
+sv_skip_speed_reduce(
+	"sv_skip_speed_reduce",
+	"12",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Speed lost when skipping");
+ConVar
+sv_skip_jump_height_fraction(
+	"sv_skip_jump_height_fraction",
+	"0.75",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Fraction of jump height when skipping");
+ConVar
+sv_skip_speed_retain(
+	"sv_skip_speed_retain",
+	"450",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Skipping will not drop speed below this");
 ConVar
 sv_wallrun_time(
 	"sv_wallrun_time",

@@ -212,7 +212,6 @@ public:
     bool HasCapability(GameModeHUDCapability_t capability) override;
 
     float GetViewScale() override { return 1.0f; }
-    float GetJumpFactor() override { return 300.0f; } // sqrt( 60 * 2 * 750 )
 };
 
 class CGameMode_Conc : public CGameModeBase
