@@ -937,15 +937,9 @@ void CMomentumGameMovement::DoDuck(int iButtonsPressed)
 
             if (m_pPlayer->m_bIsSprinting && !bInAir && (mv->m_flForwardMove || mv->m_flSideMove))
             {
-                Vector wishdir;
-                for (int i = 0; i < 3; i++)
-                    wishdir[i] = m_vecForward[i] * mv->m_flForwardMove + m_vecRight[i] * mv->m_flSideMove;
+                const float forward = mv->m_flForwardMove / m_pPlayer->MaxSpeed();
 
-                VectorNormalize(wishdir);
-                Vector velDir = mv->m_vecVelocity.Normalized();
-                
-                // wishdir must be pointing in roughly the same direction as velocity to slide on ground
-                if (velDir.Dot(wishdir) >= sv_slide_max_angle_dot.GetFloat())
+                if (forward >= sv_slide_max_angle_dot.GetFloat())
                     CheckPowerSlide();
             }
 
