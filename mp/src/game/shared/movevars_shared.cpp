@@ -132,6 +132,23 @@ sv_pk_jump_height(
 	"60",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Regular jump height");
+ConVar
+sv_pk_airjump_height(
+	"sv_pk_airjump_height",
+	"60",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Base airjump height.");
+ConVar
+sv_pk_airjump_min_height_fraction(
+	"sv_pk_airjump_min_height_fraction",
+	"0.25",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Minimum proportion of jump height attained even if moving upwards quickly");
+ConVar
+sv_pk_airjump_horz_speed(
+	"sv_pk_airjump_horz_speed",
+	"180",
+	FCVAR_NOTIFY | FCVAR_REPLICATED);
 ConVar 
 sv_gravity_scale(
 	"sv_gravity_scale", 
@@ -288,14 +305,6 @@ sv_wallrun_time(
 	DEFAULT_WALLRUN_TIME_STRING,
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Wallrun max duration.");
-
-ConVar
-sv_airjump_delta(
-	"sv_airjump_delta",
-	"125.0",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Amount to change direction in airjump.");
-
 ConVar
 sv_wallrun_anticipation(
 	"sv_wallrun_anticipation",

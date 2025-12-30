@@ -84,6 +84,9 @@ public:
     bool ShouldApplyGroundFriction() override;
 
     // ========== Parkour-only methods
+    void DoRegularJump();
+    void DoAirJump();
+    void DoWallJump();
 
     // Check if only touching wall with head/upper body
     void            CheckFeetCanReachWall();

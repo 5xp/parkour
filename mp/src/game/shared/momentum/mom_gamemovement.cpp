@@ -1474,38 +1474,19 @@ bool CMomentumGameMovement::CheckJumpButton()
     float startz = mv->m_vecVelocity[2];
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
     {
-        float jumpHeight;
-        if (m_pPlayer->m_bIsPowerSliding)
+        
+        if (m_pPlayer->m_nAirJumpState == AIRJUMP_NOW)
         {
-            jumpHeight = sv_slide_jump_height.GetFloat();
-            m_pPlayer->m_bDoFOVScale = false;
+            DoAirJump();
+        }
+        else if (m_pPlayer->m_nWallRunState == WALLRUN_JUMPING)
+        {
+            DoWallJump();
         }
         else
         {
-            jumpHeight = sv_pk_jump_height.GetFloat();
+            DoRegularJump();
         }
-        
-        const float timeSinceLanding =
-            (static_cast<float>(gpGlobals->tickcount - m_pPlayer->m_iLandTick)) * gpGlobals->interval_per_tick;
-
-        if (bWasGrounded && timeSinceLanding < sv_skip_time.GetFloat())
-        {
-            jumpHeight *= sv_skip_jump_height_fraction.GetFloat();
-
-            // Reduce speed to skip_speed_retain without going below
-            Vector velocity = mv->m_vecVelocity;
-            velocity.z = 0.0f;
-            float speed = velocity.Length();
-            float newSpeed = max(sv_skip_speed_retain.GetFloat(), speed - sv_skip_speed_reduce.GetFloat());
-            if (speed > sv_skip_speed_retain.GetFloat())
-                VectorScale(velocity, newSpeed / speed, velocity);
-
-            mv->m_vecVelocity[0] = velocity[0];
-            mv->m_vecVelocity[1] = velocity[1];
-        }
-
-        mv->m_vecVelocity[2] =
-            flGroundFactor * sqrt(2.0f * jumpHeight * sv_gravity.GetFloat());
     }
     else if (!g_pGameModeSystem->IsCSBasedMode() && (player->m_Local.m_bDucking ||
                                                 player->GetFlags() & FL_DUCKING ||
@@ -1564,56 +1545,6 @@ bool CMomentumGameMovement::CheckJumpButton()
 
         // Add it on
         VectorAdd((vecForward * flSpeedAddition), mv->m_vecVelocity, mv->m_vecVelocity);
-    }
-
-    // MOM_TODO: This has AHOP bits still!!! Pull important bits out and let's not allow accelerated speed gain!
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
-    {
-        const auto oldspeed = mv->m_vecVelocity.Length();
-
-        if (m_pPlayer->m_nAirJumpState == AIRJUMP_NOW)
-        {
-            // allow an airjump to change direction, but not gain speed in the 
-            // original direction
-            Vector wishdir;
-            for (int i = 0; i < 2; i++)
-            {
-                // Determine x and y parts of velocity
-                wishdir[i] = m_vecForward[i] * mv->m_flForwardMove + m_vecRight[i] * mv->m_flSideMove;
-            }
-            wishdir.z = mv->m_vecVelocity.z;
-            VectorNormalize(wishdir);
-
-            VectorScale(wishdir, sv_airjump_delta.GetFloat(), wishdir);
-
-            mv->m_vecVelocity += wishdir;
-            const auto newspeed = mv->m_vecVelocity.Length();
-            if (newspeed > oldspeed)
-            {
-                VectorScale(mv->m_vecVelocity, oldspeed / newspeed, mv->m_vecVelocity);
-            }
-        }
-
-        /*if (m_pPlayer->m_nWallRunState == WALLRUN_JUMPING)
-        {
-            // Jump out from the wall 
-            float wall_push_scale =
-                //(fabs( cos( DEG2RAD( GetWallRunYaw() ) ) ) ) *
-                flNewSpeed * sv_wallrun_jump_push.GetFloat();
-
-            Vector vecWallPush = vec3_origin; // if jumping off a wall, add some velocity from the wall normal
-            VectorScale(m_pPlayer->m_vecWallNorm, wall_push_scale, vecWallPush);
-            VectorAdd(vecWallPush, mv->m_vecVelocity, mv->m_vecVelocity);
-        }*/
-
-        if (m_pPlayer->m_nWallRunState == WALLRUN_JUMPING)
-        {
-            Vector direction = mv->m_vecVelocity;
-            direction.z = 0;
-            VectorNormalizeFast(direction);
-            mv->m_vecVelocity += direction * 60.0f;
-            mv->m_vecVelocity += m_pPlayer->m_vecWallNorm * 205.0f;
-        }
     }
 
     FinishGravity();
@@ -1695,6 +1626,62 @@ bool CMomentumGameMovement::CheckJumpButton()
 #endif
 
     return true;
+}
+
+void CMomentumGameMovement::DoRegularJump()
+{
+    float jumpHeight;
+    if (m_pPlayer->m_bIsPowerSliding)
+    {
+        jumpHeight = sv_slide_jump_height.GetFloat();
+        m_pPlayer->m_bDoFOVScale = false;
+    }
+    else
+    {
+        jumpHeight = sv_pk_jump_height.GetFloat();
+    }
+
+    const float timeSinceLanding =
+        (static_cast<float>(gpGlobals->tickcount - m_pPlayer->m_iLandTick)) * gpGlobals->interval_per_tick;
+
+    if (timeSinceLanding < sv_skip_time.GetFloat())
+    {
+        jumpHeight *= sv_skip_jump_height_fraction.GetFloat();
+
+        // Reduce speed to skip_speed_retain without going below
+        Vector velocity = mv->m_vecVelocity;
+        velocity.z = 0.0f;
+        float speed = velocity.Length();
+        float newSpeed = max(sv_skip_speed_retain.GetFloat(), speed - sv_skip_speed_reduce.GetFloat());
+        if (speed > sv_skip_speed_retain.GetFloat())
+            VectorScale(velocity, newSpeed / speed, velocity);
+
+        mv->m_vecVelocity[0] = velocity[0];
+        mv->m_vecVelocity[1] = velocity[1];
+    }
+
+    mv->m_vecVelocity[2] = sqrt(2.0f * jumpHeight * sv_gravity.GetFloat());
+}
+
+void CMomentumGameMovement::DoAirJump()
+{
+    const float startZ = mv->m_vecVelocity.z;
+    const float minUpSpeed = sqrt(2.0f * sv_pk_airjump_height.GetFloat() * sv_gravity.GetFloat());
+    const float jumpFrac = sqrt(sv_pk_airjump_min_height_fraction.GetFloat());
+    const float delta = max(minUpSpeed - startZ, minUpSpeed * jumpFrac);
+    // TODO: lurch
+    mv->m_vecVelocity.z += delta;
+}
+
+void CMomentumGameMovement::DoWallJump()
+{
+    // TODO: upspeed, outwardspeed, inputdirspeed
+    const auto oldspeed = mv->m_vecVelocity.Length();
+    Vector direction = mv->m_vecVelocity;
+    direction.z = 0;
+    VectorNormalizeFast(direction);
+    mv->m_vecVelocity += direction * 60.0f;
+    mv->m_vecVelocity += m_pPlayer->m_vecWallNorm * 205.0f;
 }
 
 void CMomentumGameMovement::CategorizePosition()
