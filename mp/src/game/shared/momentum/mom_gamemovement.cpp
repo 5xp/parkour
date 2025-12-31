@@ -1725,8 +1725,9 @@ void CMomentumGameMovement::DoWallJump()
 
     mv->m_vecVelocity += horizontalImpulse;
 
-    // TODO: figure out how upSpeed is scaled if at all
-    mv->m_vecVelocity.z += upSpeed;
+    float addSpeed = upSpeed - mv->m_vecVelocity.z;
+    addSpeed = clamp(addSpeed, 0.0f, 1.5f * upSpeed);
+    mv->m_vecVelocity.z += addSpeed;
 }
 
 void CMomentumGameMovement::CategorizePosition()
@@ -3849,9 +3850,6 @@ void CMomentumGameMovement::EndWallRun()
     m_pPlayer->DeriveMaxSpeed();
 #endif
 
-    Vector vecWallPush;
-    VectorScale(m_pPlayer->m_vecWallNorm, 16.0f, vecWallPush);
-    mv->m_vecVelocity += vecWallPush;
     m_pPlayer->m_vecLastWallRunPos = mv->GetAbsOrigin();
 
     m_pPlayer->m_Local.m_vecTargetPunchAngle.Set(ROLL, 0);
