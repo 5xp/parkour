@@ -120,8 +120,8 @@ bool C_MomentumPlayer::CreateMove(float flInputSampleTime, CUserCmd *pCmd)
 
     bool lerpIn = m_bIsPowerSliding && m_bDoFOVScale;
     float lerpTime = lerpIn
-        ? sv_slide_fov_lerp_in_time.GetFloat()
-        : sv_slide_fov_lerp_out_time.GetFloat();
+        ? sv_pk_slide_fov_lerp_in_time.GetFloat()
+        : sv_pk_slide_fov_lerp_out_time.GetFloat();
     float lerpTo = lerpIn ? 1.0f : 0.0f;
     m_flFOVScaleFrac = Approach(lerpTo, m_flFOVScaleFrac, 1.0f / lerpTime * gpGlobals->frametime);
 
@@ -221,7 +221,7 @@ void C_MomentumPlayer::CalcViewRoll(QAngle &eyeAngles)
     float speed = velocity.Length();
 
     // more speed -> more tilt
-    float speedFrac = RemapValClamped(speed, sv_slide_stop_speed.GetFloat(), sv_slide_viewtilt_player_speed.GetFloat(), 0.0f, 1.0f);
+    float speedFrac = RemapValClamped(speed, sv_pk_slide_stop_speed.GetFloat(), sv_pk_slide_viewtilt_player_speed.GetFloat(), 0.0f, 1.0f);
     Vector targetTiltVec = m_bIsPowerSliding ? velocity.Normalized() * speedFrac : vec3_origin;
 
     Vector forward, right, up;
@@ -232,8 +232,8 @@ void C_MomentumPlayer::CalcViewRoll(QAngle &eyeAngles)
     float angleFrac = DotProduct(m_Local.m_vecSlideTilt, left);
 
     float approachSpeed = m_bIsPowerSliding && m_Local.m_vecSlideTilt.LengthSqr() < targetTiltVec.LengthSqr()
-        ? sv_slide_viewtilt_increase_speed.GetFloat()
-        : sv_slide_viewtilt_decrease_speed.GetFloat();
+        ? sv_pk_slide_viewtilt_increase_speed.GetFloat()
+        : sv_pk_slide_viewtilt_decrease_speed.GetFloat();
 
     Vector delta = targetTiltVec - m_Local.m_vecSlideTilt;
     float len = delta.Length();
@@ -242,13 +242,13 @@ void C_MomentumPlayer::CalcViewRoll(QAngle &eyeAngles)
         delta *= maxStep / len;
     m_Local.m_vecSlideTilt += delta;
 
-    float totalRoll = angleFrac * sv_slide_viewtilt_side.GetFloat();
+    float totalRoll = angleFrac * sv_pk_slide_viewtilt_side.GetFloat();
 
     eyeAngles[ROLL] += totalRoll;
 }
 
 float C_MomentumPlayer::GetFOV()
 {
-    float fovScale = Lerp(m_flFOVScaleFrac, 1.0f, sv_slide_fov_scale.GetFloat());
+    float fovScale = Lerp(m_flFOVScaleFrac, 1.0f, sv_pk_slide_fov_scale.GetFloat());
     return BaseClass::GetFOV() * fovScale;
 }

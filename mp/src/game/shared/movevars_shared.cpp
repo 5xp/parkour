@@ -150,152 +150,152 @@ sv_pk_airjump_horz_speed(
 	"180",
 	FCVAR_NOTIFY | FCVAR_REPLICATED);
 ConVar 
-sv_gravity_scale(
-	"sv_gravity_scale", 
+sv_pk_gravity_scale(
+	"sv_pk_gravity_scale", 
 	"0.75",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,    
 	"How affected the player is by gravity.");
 ConVar 
-sv_slide_required_start_speed(
-	"sv_slide_required_start_speed", 
+sv_pk_slide_required_start_speed(
+	"sv_pk_slide_required_start_speed", 
 	"200.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,    
 	"Required speed to start a slide.");
 ConVar 
-sv_slide_stop_speed(
-	"sv_slide_stop_speed", 
+sv_pk_slide_stop_speed(
+	"sv_pk_slide_stop_speed", 
 	"125.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,    
 	"Falling under this speed will end a slide.");
 ConVar 
-sv_slide_max_stop_speed(
-	"sv_slide_max_stop_speed", 
+sv_pk_slide_max_stop_speed(
+	"sv_pk_slide_max_stop_speed", 
 	"350.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,    
 	"Slide may not end while speed is above this.");
 ConVar 
-sv_slide_want_to_stop_decel(
-	"sv_slide_want_to_stop_decel", 
+sv_pk_slide_want_to_stop_decel(
+	"sv_pk_slide_want_to_stop_decel", 
 	"350.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,    
-	"Deceleration is replaced with this when trying to stand up during a slide when over sv_slide_max_stop_speed.");
+	"Deceleration is replaced with this when trying to stand up during a slide when over sv_pk_slide_max_stop_speed.");
 ConVar 
-sv_slide_max_angle_dot(
-	"sv_slide_max_angle_dot", 
+sv_pk_slide_max_angle_dot(
+	"sv_pk_slide_max_angle_dot", 
 	"0.6",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,    
 	"Cosine of max angle from forward that you can slide when sprinting.");
 ConVar
-sv_slide_speed_boost(
-	"sv_slide_speed_boost",
+sv_pk_slide_speed_boost(
+	"sv_pk_slide_speed_boost",
 	"150.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Speed boost for powerslide.");
 ConVar
-sv_slide_speed_boost_cap(
-	"sv_slide_speed_boost_cap",
+sv_pk_slide_speed_boost_cap(
+	"sv_pk_slide_speed_boost_cap",
 	"400.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"");
 ConVar
-sv_slide_boost_cooldown(
-	"sv_slide_boost_cooldown",
+sv_pk_slide_boost_cooldown(
+	"sv_pk_slide_boost_cooldown",
 	"2.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Amount of time between slides until a boost is allowed.");
 ConVar
-sv_slide_jump_height(
-	"sv_slide_jump_height",
+sv_pk_slide_jump_height(
+	"sv_pk_slide_jump_height",
 	"50.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Jump height while sliding.");
 ConVar
-sv_slide_accel(
-	"sv_slide_accel",
+sv_pk_slide_accel(
+	"sv_pk_slide_accel",
 	"20.0", // TODO: figure out this value
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Acceleration from input while sliding.");
 ConVar
-sv_slide_decel(
-	"sv_slide_decel",
+sv_pk_slide_decel(
+	"sv_pk_slide_decel",
 	"50.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Linear amount of deceleration while sliding.");
 ConVar
-sv_slide_velocity_decay(
-	"sv_slide_velocity_decay",
+sv_pk_slide_velocity_decay(
+	"sv_pk_slide_velocity_decay",
 	"0.7",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Proportion of velocity kept per second while sliding.");
 ConVar
-sv_slide_step_velocity_reduction(
-	"sv_slide_step_velocity_reduction",
+sv_pk_slide_step_velocity_reduction(
+	"sv_pk_slide_step_velocity_reduction",
 	"10.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Amount of speed to lose per unit stepped");
 ConVar
-sv_slide_fov_scale(
-	"sv_slide_fov_scale",
+sv_pk_slide_fov_scale(
+	"sv_pk_slide_fov_scale",
 	"1.1",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Max FOV scale while sliding");
 ConVar
-sv_slide_fov_lerp_in_time(
-	"sv_slide_fov_lerp_in_time",
+sv_pk_slide_fov_lerp_in_time(
+	"sv_pk_slide_fov_lerp_in_time",
 	"0.25",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Duration over which FOV will be lerped to max while sliding");
 ConVar
-sv_slide_fov_lerp_out_time(
-	"sv_slide_fov_lerp_out_time",
+sv_pk_slide_fov_lerp_out_time(
+	"sv_pk_slide_fov_lerp_out_time",
 	"0.25",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Duration over which FOV will be lerped to normal after sliding");
 ConVar
-sv_slide_viewtilt_increase_speed(
-	"sv_slide_viewtilt_increase_speed",
+sv_pk_slide_viewtilt_increase_speed(
+	"sv_pk_slide_viewtilt_increase_speed",
 	"5",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Speed at which viewtilt while sliding increases to full.");
 ConVar
-sv_slide_viewtilt_decrease_speed(
-	"sv_slide_viewtilt_decrease_speed",
+sv_pk_slide_viewtilt_decrease_speed(
+	"sv_pk_slide_viewtilt_decrease_speed",
 	"2.5",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Speed at which viewtilt while sliding decreases to zero.");
 ConVar
-sv_slide_viewtilt_side(
-	"sv_slide_viewtilt_side",
+sv_pk_slide_viewtilt_side(
+	"sv_pk_slide_viewtilt_side",
 	"15",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Max view tilt while looking to the side while sliding.");
 ConVar
-sv_slide_viewtilt_player_speed(
-	"sv_slide_viewtilt_player_speed",
+sv_pk_slide_viewtilt_player_speed(
+	"sv_pk_slide_viewtilt_player_speed",
 	"400",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"View tilt while sliding is at full at this speed.");
 ConVar
-sv_skip_time(
-	"sv_skip_time",
+sv_pk_skip_time(
+	"sv_pk_skip_time",
 	"0.1",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Player is considered skipping if they jump within this number of seconds after landing");
 ConVar
-sv_skip_speed_reduce(
-	"sv_skip_speed_reduce",
+sv_pk_skip_speed_reduce(
+	"sv_pk_skip_speed_reduce",
 	"12",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Speed lost when skipping");
 ConVar
-sv_skip_jump_height_fraction(
-	"sv_skip_jump_height_fraction",
+sv_pk_skip_jump_height_fraction(
+	"sv_pk_skip_jump_height_fraction",
 	"0.75",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Fraction of jump height when skipping");
 ConVar
-sv_skip_speed_retain(
-	"sv_skip_speed_retain",
+sv_pk_skip_speed_retain(
+	"sv_pk_skip_speed_retain",
 	"450",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Skipping will not drop speed below this");
@@ -318,129 +318,122 @@ sv_pk_wallrun_jump_inputdirspeed(
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Speed achieved in the direction of input from walljumping.");
 ConVar
-sv_wallrun_time(
-	"sv_wallrun_time",
+sv_pk_wallrun_time(
+	"sv_pk_wallrun_time",
 	DEFAULT_WALLRUN_TIME_STRING,
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Wallrun max duration.");
 ConVar
-sv_wallrun_anticipation(
-	"sv_wallrun_anticipation",
+sv_pk_wallrun_anticipation(
+	"sv_pk_wallrun_anticipation",
 	"2",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"0 - none, 1 - Eye roll only, 2 - Full (bumps).");
 
 ConVar
-sv_wallrun_boost(
-	"sv_wallrun_boost",
+sv_pk_wallrun_boost(
+	"sv_pk_wallrun_boost",
 	DEFAULT_WALLRUN_BOOST_STRING,
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Wallrun speed boost.");
 ConVar
-sv_wallrun_speed(
-	"sv_wallrun_speed",
+sv_pk_wallrun_speed(
+	"sv_pk_wallrun_speed",
 	DEFAULT_WALLRUN_SPEED_STRING,
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Wallrun speed.");
 ConVar
-sv_wallrun_accel(
-	"sv_wallrun_accel",
+sv_pk_wallrun_accel(
+	"sv_pk_wallrun_accel",
 	"4.25",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Wallrun acceleration.");
 
 ConVar
-sv_wallrun_roll(
-	"sv_wallrun_roll",
+sv_pk_wallrun_roll(
+	"sv_pk_wallrun_roll",
 	"14.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Wallrun view roll angle.");
 
 ConVar
-sv_wallrun_max_rise(
-	"sv_wallrun_max_rise",
+sv_pk_wallrun_max_rise(
+	"sv_pk_wallrun_max_rise",
 	"25.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Wallrun upward limit.");
 
 ConVar
-sv_wallrun_min_rise(
-	"sv_wallrun_min_rise",
+sv_pk_wallrun_min_rise(
+	"sv_pk_wallrun_min_rise",
 	"-50.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Wallrun downward limit.");
 
 ConVar
-sv_wallrun_scramble_z(
-	"sv_wallrun_scramble_z",
+sv_pk_wallrun_scramble_z(
+	"sv_pk_wallrun_scramble_z",
 	"28.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Height we can climb to.");
 
 ConVar
-sv_wallrun_lookahead(
-	"sv_wallrun_lookahead",
+sv_pk_wallrun_lookahead(
+	"sv_pk_wallrun_lookahead",
 	"0.22",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Amount of time (in seconds) to lookahead for bumps or corners when wallrunning.");
 
 ConVar
-sv_wallrun_inness(
-	"sv_wallrun_inness",
+sv_pk_wallrun_inness(
+	"sv_pk_wallrun_inness",
 	"360",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Scaling factor for how much to steer inward toward the wall when wallrunning");
 ConVar
-sv_wallrun_outness(
-	"sv_wallrun_outness",
+sv_pk_wallrun_outness(
+	"sv_pk_wallrun_outness",
 	"300",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Scaling factor for how much to steer outward around obstacles when wallrunning");
 
 ConVar
-sv_wallrun_lookness(
-	"sv_wallrun_lookness",
+sv_pk_wallrun_lookness(
+	"sv_pk_wallrun_lookness",
 	"1",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Scaling factor for how much to adjust view to look where you're going when wallrunning");
 ConVar
-sv_wallrun_look_delay(
-	"sv_wallrun_look_delay",
-	"0.3",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"How long to wait before aligning the view with the move direction when wallrunning.");
-
-ConVar
-sv_wallrun_feet_z(
-	"sv_wallrun_feet_z",
+sv_pk_wallrun_feet_z(
+	"sv_pk_wallrun_feet_z",
 	"10",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Fudge for starting a wallrun with your feet below the bottom edge of the wall");
 
 ConVar
-sv_wallrun_stick_angle(
-	"sv_wallrun_stick_angle",
+sv_pk_wallrun_stick_angle(
+	"sv_pk_wallrun_stick_angle",
 	"45",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Min angle away from wall norm for player to wallrun");
 
 ConVar
-sv_wallrun_corner_stick_angle(
-	"sv_wallrun_corner_stick_angle",
+sv_pk_wallrun_corner_stick_angle(
+	"sv_pk_wallrun_corner_stick_angle",
 	"80",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"End wallrun at end of wall if facing within this angle of wall norm");
 
 ConVar
-sv_coyote_time(
-	"sv_coyote_time",
+sv_pk_coyote_time(
+	"sv_pk_coyote_time",
 	"0.2",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Time after leaving a surface that jumps are still allowed.");
 
 ConVar
-sv_slide_lock(
-	"sv_slide_lock",
+sv_pk_slide_lock(
+	"sv_pk_slide_lock",
 	"1",
 	FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_ARCHIVE,
 	"Locks your move direction when sliding");

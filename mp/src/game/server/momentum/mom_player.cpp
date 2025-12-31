@@ -791,7 +791,7 @@ void CMomentumPlayer::DeriveMaxSpeed()
     float newMaxSpeed;
     if (m_nWallRunState >= WALLRUN_RUNNING)
     {
-        newMaxSpeed = sv_wallrun_speed.GetFloat();
+        newMaxSpeed = sv_pk_wallrun_speed.GetFloat();
     }
     else if (m_bIsSprinting)
     {
