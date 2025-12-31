@@ -1675,13 +1675,58 @@ void CMomentumGameMovement::DoAirJump()
 
 void CMomentumGameMovement::DoWallJump()
 {
-    // TODO: upspeed, outwardspeed, inputdirspeed
-    const auto oldspeed = mv->m_vecVelocity.Length();
-    Vector direction = mv->m_vecVelocity;
-    direction.z = 0;
-    VectorNormalizeFast(direction);
-    mv->m_vecVelocity += direction * 60.0f;
-    mv->m_vecVelocity += m_pPlayer->m_vecWallNorm * 205.0f;
+    const Vector wallNormal = m_pPlayer->m_vecWallNorm;
+    const float upSpeed = sv_pk_wallrun_jump_upspeed.GetFloat();
+    float outSpeed = sv_pk_wallrun_jump_outwardspeed.GetFloat();
+    const float inputDirSpeed = sv_pk_wallrun_jump_inputdirspeed.GetFloat();
+
+    Vector wishdir;
+    for (int i = 0; i < 3; i++)
+        wishdir[i] = m_vecForward[i] * mv->m_flForwardMove + m_vecRight[i] * mv->m_flSideMove;
+    VectorNormalize(wishdir);
+
+    Vector forward2D = m_vecForward;
+    forward2D.z = 0.0f;
+    VectorNormalize(forward2D);
+
+    Vector wallNormal2D = wallNormal;
+    wallNormal2D.z = 0.0f;
+    VectorNormalize(wallNormal2D);
+
+    float lookIntoWall = forward2D.Dot(wallNormal2D);
+    float wishIntoWall = wishdir.Dot(wallNormal2D);
+
+    // Are we both looking into the wall and inputting into the wall?
+    if (lookIntoWall < 0.0f && wishIntoWall < 0.0f)
+    {
+        // Penalty scales with the product of look alignment and wishdir alignment
+        // 1.0 = Perfectly looking AND inputting into wall (max penalty -> 0.2x speed)
+        // 0.0 = either looking OR inputting parallel to wall (no penalty -> 1.0x speed)
+        float alignmentProduct = lookIntoWall * wishIntoWall;
+        float multiplier = Lerp(alignmentProduct, 1.0f, 0.2f);
+        outSpeed *= multiplier;
+    }
+
+    Vector inputDirImpulse = inputDirSpeed * wishdir;
+
+    float inputIntoWall = inputDirImpulse.Dot(wallNormal);
+    if (inputIntoWall < 0.0f)
+    {
+        inputDirImpulse += wallNormal * -inputIntoWall;
+        inputIntoWall = 0.0f;
+    }
+
+    Vector horizontalImpulse = inputDirImpulse;
+    const float outSpeedNeeded = outSpeed - DotProduct(horizontalImpulse, wallNormal);
+    if (outSpeedNeeded > 0.0f)
+    {
+        horizontalImpulse += wallNormal * outSpeedNeeded;
+    }
+
+    mv->m_vecVelocity += horizontalImpulse;
+
+    // TODO: figure out how upSpeed is scaled if at all
+    mv->m_vecVelocity.z += upSpeed;
 }
 
 void CMomentumGameMovement::CategorizePosition()

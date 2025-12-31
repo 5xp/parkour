@@ -300,6 +300,24 @@ sv_skip_speed_retain(
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Skipping will not drop speed below this");
 ConVar
+sv_pk_wallrun_jump_upspeed(
+	"sv_pk_wallrun_jump_upspeed",
+	"230",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Upward speed achieved from walljumping.");
+ConVar
+sv_pk_wallrun_jump_outwardspeed(
+	"sv_pk_wallrun_jump_outwardspeed",
+	"205",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Maximum speed away from the wall achieved from walljumping.");
+ConVar
+sv_pk_wallrun_jump_inputdirspeed(
+	"sv_pk_wallrun_jump_inputdirspeed",
+	"75",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Speed achieved in the direction of input from walljumping.");
+ConVar
 sv_wallrun_time(
 	"sv_wallrun_time",
 	DEFAULT_WALLRUN_TIME_STRING,
@@ -318,18 +336,6 @@ sv_wallrun_boost(
 	DEFAULT_WALLRUN_BOOST_STRING,
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Wallrun speed boost.");
-ConVar
-sv_wallrun_jump_boost(
-	"sv_wallrun_jump_boost",
-	"0.15",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Fraction of wallrun speed to add to jump.");
-ConVar
-sv_wallrun_jump_push(
-	"sv_wallrun_jump_push",
-	"0.25",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Fraction of wall jump speed to go to pushing off wall.");
 ConVar
 sv_wallrun_speed(
 	"sv_wallrun_speed",
