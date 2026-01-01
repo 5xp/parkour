@@ -137,6 +137,7 @@ public:
     // Parkour's version of WaterJump
     void WaterJumpParkour();
 
+    void RedirectVelocity(const Vector &wishdir, Vector velocity, const float maxDelta, const float strengthFrac, const float targetSpeed);
     void PerformLurchChecks();
 
 private:

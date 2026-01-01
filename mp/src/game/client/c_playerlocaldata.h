@@ -56,7 +56,6 @@ public:
 
 	// Parkour
 	float					m_slideBoostCooldown;
-	float					m_lurchTimer;
 	float					m_flWallRunTime;
 	float					m_punchRollOverride;
 	float					m_punchRollOverrideTarget;

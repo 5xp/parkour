@@ -149,6 +149,26 @@ sv_pk_airjump_horz_speed(
 	"sv_pk_airjump_horz_speed",
 	"180",
 	FCVAR_NOTIFY | FCVAR_REPLICATED);
+ConVar
+sv_pk_lurch_periodmin(
+	"sv_pk_lurch_periodmin",
+	"0.2",
+	FCVAR_NOTIFY | FCVAR_REPLICATED);
+ConVar
+sv_pk_lurch_periodmax(
+	"sv_pk_lurch_periodmax",
+	"0.5",
+	FCVAR_NOTIFY | FCVAR_REPLICATED);
+ConVar
+sv_pk_lurch_strength(
+	"sv_pk_lurch_strength",
+	"0.7",
+	FCVAR_NOTIFY | FCVAR_REPLICATED);
+ConVar
+sv_pk_lurch_max(
+	"sv_pk_lurch_max",
+	"0.7",
+	FCVAR_NOTIFY | FCVAR_REPLICATED);
 ConVar 
 sv_pk_gravity_scale(
 	"sv_pk_gravity_scale", 
