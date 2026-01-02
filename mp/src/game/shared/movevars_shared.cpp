@@ -153,22 +153,26 @@ ConVar
 sv_pk_lurch_periodmin(
 	"sv_pk_lurch_periodmin",
 	"0.2",
-	FCVAR_NOTIFY | FCVAR_REPLICATED);
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Lurch strength will begin tapering off after this many seconds after jumping.");
 ConVar
 sv_pk_lurch_periodmax(
 	"sv_pk_lurch_periodmax",
 	"0.5",
-	FCVAR_NOTIFY | FCVAR_REPLICATED);
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Lurch strength tapers to zero after this many seconds after jumping.");
 ConVar
 sv_pk_lurch_strength(
 	"sv_pk_lurch_strength",
 	"0.7",
-	FCVAR_NOTIFY | FCVAR_REPLICATED);
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Fraction of change towards the desired lurch direction.");
 ConVar
 sv_pk_lurch_max(
 	"sv_pk_lurch_max",
 	"0.7",
-	FCVAR_NOTIFY | FCVAR_REPLICATED);
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Maximum amount of velocity change toward desired lurch target as a fraction of sprinting speed.");
 ConVar 
 sv_pk_gravity_scale(
 	"sv_pk_gravity_scale", 

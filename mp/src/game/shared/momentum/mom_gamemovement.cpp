@@ -1666,33 +1666,19 @@ void CMomentumGameMovement::DoAirJump()
     const float delta = max(minUpSpeed - startZ, minUpSpeed * jumpFrac);
     mv->m_vecVelocity.z += delta;
 
-    // Lurch!
-    Vector wishdir;
-    Vector forward, right, up;
-
-    AngleVectors(mv->m_vecViewAngles, &forward, &right, &up); // Determine movement angles
-
-    // Copy movement amounts
-    float fmove = mv->m_flForwardMove;
-    float smove = mv->m_flSideMove;
-
-    // Zero out z components of movement vectors
-    forward[2] = 0;
-    right[2] = 0;
-    VectorNormalize(forward); // Normalize remainder of vectors
-    VectorNormalize(right);   //
-    wishdir.Init();
-
-    for (int i = 0; i < 2; i++) // Determine x and y parts of velocity
-        wishdir[i] = forward[i] * fmove + right[i] * smove;
-    wishdir.z = 0; // Zero out z part of velocity
-    VectorNormalizeFast(wishdir);
+    // Lurch
+    Vector wishdir = m_vecForward * mv->m_flForwardMove + m_vecRight * mv->m_flSideMove;
+    wishdir.z = 0.0f;
+    wishdir.NormalizeInPlace();
 
     Vector velocity = mv->m_vecVelocity;
     velocity.z = 0.0f;
+    const float strengthFrac = 1.0f;
     const float speed = min(velocity.Length(), sv_pk_airjump_horz_speed.GetFloat());
     const float maxDelta = 2.0f * sv_pk_airjump_horz_speed.GetFloat();
-    RedirectVelocity(wishdir, velocity.Normalized() * speed, maxDelta, 1.0f, sv_pk_airjump_horz_speed.GetFloat());
+
+    // Do both the sv_pk_airjump_horz_speed boost as well as redirection
+    RedirectVelocity(wishdir, velocity.Normalized() * speed, maxDelta, strengthFrac, sv_pk_airjump_horz_speed.GetFloat());
 }
 
 void CMomentumGameMovement::DoWallJump()
@@ -2424,29 +2410,10 @@ void CMomentumGameMovement::RedirectVelocity(const Vector &wishdir, Vector veloc
     mv->m_vecVelocity += delta;
 }
 
+// Checks if the player inputted a movement key - if so, lurch, otherwise, do nothing
+// May only be called when in the air
 void CMomentumGameMovement::PerformLurchChecks()
 {
-    Vector wishdir;
-    Vector forward, right, up;
-
-    AngleVectors(mv->m_vecViewAngles, &forward, &right, &up); // Determine movement angles
-
-    // Copy movement amounts
-    float fmove = mv->m_flForwardMove;
-    float smove = mv->m_flSideMove;
-
-    // Zero out z components of movement vectors
-    forward[2] = 0;
-    right[2] = 0;
-    VectorNormalize(forward); // Normalize remainder of vectors
-    VectorNormalize(right);   //
-    wishdir.Init();
-
-    for (int i = 0; i < 2; i++) // Determine x and y parts of velocity
-        wishdir[i] = forward[i] * fmove + right[i] * smove;
-    wishdir.z = 0; // Zero out z part of velocity
-    VectorNormalizeFast(wishdir);
-
     int buttonsChanged = (mv->m_nOldButtons ^ mv->m_nButtons); // These buttons have changed this frame
     int buttonsPressed = buttonsChanged & mv->m_nButtons;      // The changed ones still down are "pressed"
 
@@ -2454,12 +2421,21 @@ void CMomentumGameMovement::PerformLurchChecks()
     if (!(buttonsPressed & moveButtons))
         return;
 
-    const float timeSinceJumping =
-        (static_cast<float>(gpGlobals->tickcount - m_pPlayer->m_iJumpTick)) * gpGlobals->interval_per_tick;
+    // Use buttons to derive wishdir 
+    // If we use m_vecFoward/m_vecRight, we may get the wrong wishdir due to KeyState fractional behavior
+    float f = mv->m_nButtons & IN_FORWARD ? 1 : 0;
+    float s = (mv->m_nButtons & IN_MOVERIGHT ? 1 : 0) - (mv->m_nButtons & IN_MOVELEFT ? 1 : 0);
+    Vector wishdir = m_vecForward * f + m_vecRight * s;
+    wishdir.z = 0.0f;
+    wishdir.NormalizeInPlace();
+
+    const float timeSinceJump = (gpGlobals->tickcount - m_pPlayer->m_iJumpTick) * gpGlobals->interval_per_tick;
 
     float minTime = sv_pk_lurch_periodmin.GetFloat();
     float maxTime = sv_pk_lurch_periodmax.GetFloat();
-    const float lurchFrac = RemapValClamped(timeSinceJumping, minTime, maxTime, 1.0f, 0.0f);
+
+    // Remap the timeSinceJump into the lurch period - at max until minTime, then drops off linearly until maxTime
+    const float lurchFrac = RemapValClamped(timeSinceJump, minTime, maxTime, 1.0f, 0.0f);
     const float strengthFrac = sv_pk_lurch_strength.GetFloat() * lurchFrac;
     const float maxDelta = sv_pk_lurch_max.GetFloat() * PK_SPRINT_SPEED;
 
@@ -2468,12 +2444,12 @@ void CMomentumGameMovement::PerformLurchChecks()
 
 void CMomentumGameMovement::AirMove()
 {
+    BaseClass::AirMove();
+    
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
     {
         PerformLurchChecks();
     }
-
-    BaseClass::AirMove();
 
     if (!(mv->m_nButtons & IN_DUCK) && (sv_pk_wallrun_anticipation.GetInt() >= 1))
     {
