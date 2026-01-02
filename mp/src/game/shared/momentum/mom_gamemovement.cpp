@@ -223,18 +223,6 @@ void CMomentumGameMovement::WalkMove()
         // physics objects which can be fixed by pretending they 
         // are holding the button down 
         VectorCopy(mv->m_vecVelocity, wishdir);
-
-        Vector direction = mv->m_vecVelocity;
-        VectorNormalizeFast(direction);
-        // float leanProjection = DotProduct(direction, );
-
-        QAngle angles;
-        float player_yaw = AngleNormalizePositive(mv->m_vecAbsViewAngles[YAW]);
-        VectorAngles(direction, angles);
-        float velocity_yaw = AngleNormalizePositive(angles[YAW]);
-
-        float angle = 15 * sinf(DEG2RAD(velocity_yaw - player_yaw));
-        player->m_Local.m_punchRollOverrideTarget = angle;
     }
     else
     {
@@ -3607,7 +3595,6 @@ void CMomentumGameMovement::WallRunMove()
         rollangle *= player->m_Local.m_flWallRunTime / PK_WALLRUN_OUT_TIME;
     }
     player->m_Local.m_vecTargetPunchAngle.Set(ROLL, rollangle);
-    player->m_Local.m_punchRollOverride = rollangle;
 
     // Determine movement angles
     AngleVectors(mv->m_vecViewAngles, &forward, &right, &up);

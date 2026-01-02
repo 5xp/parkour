@@ -1234,26 +1234,6 @@ void CGameMovement::DecayPunchAngle( void )
 		player->m_Local.m_vecPunchAngleVel.Init( 0, 0, 0 );
 		player->m_Local.m_vecTargetPunchAngle.Init(0, 0, 0);
 	}
-
-	if (fabsf(player->m_Local.m_punchRollOverride) > 0.001f)
-	{
-		float t = gpGlobals->frametime * 10.0f;
-		float x = player->m_Local.m_punchRollOverride;
-		float y = player->m_Local.m_punchRollOverrideTarget;
-		float roll = y > x ? x * (1 - t) + y * t : y;
-
-		player->m_Local.m_punchRollOverride = roll;
-
-		float decay = Sign(player->m_Local.m_punchRollOverrideTarget) * gpGlobals->frametime * 50.0f;
-
-		player->m_Local.m_punchRollOverrideTarget -= decay;
-
-		if (decay < 0.0f && player->m_Local.m_punchRollOverrideTarget > 0.0f)
-			player->m_Local.m_punchRollOverrideTarget = 0.0f;
-
-		if (decay > 0.0f && player->m_Local.m_punchRollOverrideTarget < 0.0f)
-			player->m_Local.m_punchRollOverrideTarget = 0.0f;
-	}
 }
 
 //-----------------------------------------------------------------------------

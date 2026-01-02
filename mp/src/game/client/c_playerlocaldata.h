@@ -57,8 +57,6 @@ public:
 	// Parkour
 	float					m_slideBoostCooldown;
 	float					m_flWallRunTime;
-	float					m_punchRollOverride;
-	float					m_punchRollOverrideTarget;
 	Vector					m_vecSlideTilt;
 
 	int						m_nStepside;
