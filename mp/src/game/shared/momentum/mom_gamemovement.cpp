@@ -1648,6 +1648,8 @@ void CMomentumGameMovement::DoRegularJump()
 
 void CMomentumGameMovement::DoAirJump()
 {
+    m_pPlayer->m_bDoFOVScale = false;
+
     const float startZ = mv->m_vecVelocity.z;
     const float minUpSpeed = sqrt(2.0f * sv_pk_airjump_height.GetFloat() * sv_gravity.GetFloat());
     const float jumpFrac = sqrt(sv_pk_airjump_min_height_fraction.GetFloat());
