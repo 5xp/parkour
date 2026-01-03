@@ -36,6 +36,8 @@
 
 #define NON_JUMP_VELOCITY ((g_pGameModeSystem->IsTF2BasedMode()) ? 250.0f : 140.0f)
 
+#define PK_VIEWPUNCH_SCALE 15.0f
+
 // remove this eventually
 ConVar sv_slope_fix("sv_slope_fix", "1");
 ConVar sv_ramp_fix("sv_ramp_fix", "1");
@@ -57,6 +59,30 @@ ConVar sv_rngfix_enable("sv_rngfix_enable", "0", FCVAR_MAPPING);
 #include "env_player_surface_trigger.h"
 static ConVar dispcoll_drawplane("dispcoll_drawplane", "0");
 #endif
+
+QAngle SampleViewPunch(ViewPunchEvent event)
+{
+    const int index = static_cast<int>(event);
+
+    struct ViewPunchRange
+    {
+        QAngle min;
+        QAngle max;
+    };
+
+    static const ViewPunchRange viewPunchRanges[static_cast<int>(ViewPunchEvent::COUNT)] = {
+        {QAngle(2.2f, -0.7f, 0.85f), QAngle(3.4f, 0.7f, 1.5f)},
+        {QAngle(5.58f, -0.7f, -1.2f), QAngle(6.88f, 0.7f, 0.9f)},
+        {QAngle(2.2f, 0.0f, -0.62f), QAngle(3.4f, 0.0f, 0.62f)},
+        {QAngle(-1.93f, -0.33f, 6.2f), QAngle(-2.42f, 0.33f, 6.67f)},
+    };
+
+    const auto &range = viewPunchRanges[index];
+
+    return QAngle(SharedRandomFloat("PKViewPunchX", range.min.x, range.max.x),
+                  SharedRandomFloat("PKViewPunchY", range.min.y, range.max.y),
+                  SharedRandomFloat("PKViewPunchZ", range.min.z, range.max.z));
+}
 
 CMomentumGameMovement::CMomentumGameMovement() : m_pPlayer(nullptr) {}
 
@@ -1457,7 +1483,6 @@ bool CMomentumGameMovement::CheckJumpButton()
     float startz = mv->m_vecVelocity[2];
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
     {
-        
         if (m_pPlayer->m_nAirJumpState == AIRJUMP_NOW)
         {
             DoAirJump();
@@ -1624,6 +1649,8 @@ void CMomentumGameMovement::DoRegularJump()
         jumpHeight = sv_pk_jump_height.GetFloat();
     }
 
+    player->m_Local.m_vecPunchAngleVel += SampleViewPunch(ViewPunchEvent::JUMP) * PK_VIEWPUNCH_SCALE;
+
     const float timeSinceLanding =
         (static_cast<float>(gpGlobals->tickcount - m_pPlayer->m_iLandTick)) * gpGlobals->interval_per_tick;
 
@@ -1649,6 +1676,7 @@ void CMomentumGameMovement::DoRegularJump()
 void CMomentumGameMovement::DoAirJump()
 {
     m_pPlayer->m_bDoFOVScale = false;
+    player->m_Local.m_vecPunchAngleVel += SampleViewPunch(ViewPunchEvent::AIRJUMP) * PK_VIEWPUNCH_SCALE;
 
     const float startZ = mv->m_vecVelocity.z;
     const float minUpSpeed = sqrt(2.0f * sv_pk_airjump_height.GetFloat() * sv_gravity.GetFloat());
@@ -1673,6 +1701,8 @@ void CMomentumGameMovement::DoAirJump()
 
 void CMomentumGameMovement::DoWallJump()
 {
+    player->m_Local.m_vecPunchAngleVel += SampleViewPunch(ViewPunchEvent::JUMP) * PK_VIEWPUNCH_SCALE;
+
     const Vector wallNormal = m_pPlayer->m_vecWallNorm;
     const float upSpeed = sv_pk_wallrun_jump_upspeed.GetFloat();
     float outSpeed = sv_pk_wallrun_jump_outwardspeed.GetFloat();
@@ -3082,10 +3112,25 @@ void CMomentumGameMovement::SetGroundEntity(const trace_t *pm)
     {
         bLanded = true;
 
-        // parkour - check whether should powerslide
-        if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR) && mv->m_nOldButtons & IN_DUCK)
+        if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
         {
-            CheckPowerSlide();
+            // start slide from air
+            if (mv->m_nOldButtons & IN_DUCK)
+                CheckPowerSlide();
+
+            const float fallSpeed = player->m_Local.m_flFallVelocity;
+            const float fallHeight = fallSpeed * fallSpeed  / (12.0f * 2.0f * GetCurrentGravity());
+            const float distMin = sv_pk_viewpunch_fall_distmin.GetFloat();
+            const float distMax = sv_pk_viewpunch_fall_distmax.GetFloat();
+            const float distMaxScale = sv_pk_viewpunch_fall_distmaxscale.GetFloat();
+            float fallFrac;
+            if (fallHeight < distMin)
+                fallFrac = clamp(sinf(fallHeight / distMin * M_PI_F * 0.5f), 0.0f, 1.0f);
+            else
+                fallFrac = RemapValClamped(fallHeight, distMin, distMax, 1.0f, distMaxScale);
+
+            player->m_Local.m_vecPunchAngleVel +=
+                SampleViewPunch(ViewPunchEvent::FALL) * fallFrac * PK_VIEWPUNCH_SCALE;
         }
     }
     else if (player->GetGroundEntity() && !(pm && pm->m_pEnt))
@@ -3422,11 +3467,6 @@ void CMomentumGameMovement::AnticipateWallRun()
         // Wall coming - start leaning
         m_pPlayer->m_nWallRunState = WALLRUN_LEAN_IN;
         m_pPlayer->m_vecWallNorm = pm.plane.normal;
-        float currentLean = (1.0f - pm.fraction);
-        float curve = currentLean * (2 - currentLean);
-        player->m_Local.m_vecTargetPunchAngle.Set(ROLL, curve * GetWallRunRollAngle());
-        player->m_Local.m_vecPunchAngleVel.Set(ROLL, Sign(GetWallRunRollAngle()) * 50);
-        // player->m_Local.m_punchRollOverride = curve * GetWallRunRollAngle();
     }
 }
 
@@ -3528,8 +3568,20 @@ void CMomentumGameMovement::CheckWallRun(Vector &vecWallNormal, trace_t &pm)
             (mv->m_vecVelocity.Length2D())
         );
 
+    player->m_Local.m_vecPunchAngleVel +=
+        SampleViewPunch(ViewPunchEvent::FALL) * PK_VIEWPUNCH_SCALE;
+
+    // Apply more sideways viewpunch when looking more parallel to the wall
+    const Vector wallHorizontal = vecWallNormal.Cross(Vector(0.0f, 0.0f, -1.0f));
+    Vector forward2D = m_vecForward;
+    forward2D.z = 0.0f;
+    float forwardFrac = wallHorizontal.Dot(forward2D);
+    QAngle startPunch = SampleViewPunch(ViewPunchEvent::WALLRUN_START) * PK_VIEWPUNCH_SCALE;
+    startPunch.y *= forwardFrac;
+    startPunch.z *= forwardFrac;
+    player->m_Local.m_vecPunchAngleVel += startPunch;
+
     player->SetMaxSpeed(newmaxspeed);
-    player->m_Local.m_vecPunchAngleVel.Set(ROLL, 0);
 
     // Redirect velocity along plane
     ClipVelocity(mv->m_vecVelocity, vecWallNormal, mv->m_vecVelocity, 1.0f);
@@ -3551,7 +3603,7 @@ void CMomentumGameMovement::WallRunMove()
     if (player->m_Local.m_flWallRunTime <= 0.0f)
     {
         // time's up
-        //Msg( "*\nEndWallRun because times up\n*\n" );
+        player->m_Local.m_vecPunchAngleVel += -SampleViewPunch(ViewPunchEvent::JUMP) * PK_VIEWPUNCH_SCALE;
         EndWallRun();
         return;
     }
@@ -3596,7 +3648,6 @@ void CMomentumGameMovement::WallRunMove()
     {
         rollangle *= player->m_Local.m_flWallRunTime / PK_WALLRUN_OUT_TIME;
     }
-    player->m_Local.m_vecTargetPunchAngle.Set(ROLL, rollangle);
 
     // Determine movement angles
     AngleVectors(mv->m_vecViewAngles, &forward, &right, &up);
@@ -3830,7 +3881,6 @@ void CMomentumGameMovement::EndWallRun()
 
     m_pPlayer->m_vecLastWallRunPos = mv->GetAbsOrigin();
 
-    m_pPlayer->m_Local.m_vecTargetPunchAngle.Set(ROLL, 0);
     m_pPlayer->SetEscapeVel(vec3_origin);
     m_pPlayer->m_flCoyoteTime = gpGlobals->curtime + sv_pk_coyote_time.GetFloat();
 }

@@ -461,3 +461,19 @@ sv_pk_slide_lock(
 	"1",
 	FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_ARCHIVE,
 	"Locks your move direction when sliding");
+
+ConVar
+sv_pk_viewpunch_fall_distmin(
+	"sv_pk_viewpunch_fall_distmin",
+	"10",
+	FCVAR_NOTIFY | FCVAR_REPLICATED);
+ConVar
+sv_pk_viewpunch_fall_distmax(
+	"sv_pk_viewpunch_fall_distmax",
+	"70",
+	FCVAR_NOTIFY | FCVAR_REPLICATED);
+ConVar
+sv_pk_viewpunch_fall_distmaxscale(
+	"sv_pk_viewpunch_fall_distmaxscale",
+	"12",
+	FCVAR_NOTIFY | FCVAR_REPLICATED);

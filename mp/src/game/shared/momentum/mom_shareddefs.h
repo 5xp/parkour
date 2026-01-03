@@ -243,6 +243,15 @@ enum SpectateMessageType_t
     SPEC_UPDATE_INVALID = -1,
 };
 
+enum class ViewPunchEvent : int
+{
+    JUMP = 0,
+    AIRJUMP,
+    FALL,
+    WALLRUN_START,
+    COUNT
+};
+
 enum AirJumpState
 {
     AIRJUMP_READY = 1,    // Player has not airjumped yet

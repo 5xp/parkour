@@ -103,5 +103,8 @@ extern ConVar sv_pk_skip_time;
 extern ConVar sv_pk_skip_speed_reduce;
 extern ConVar sv_pk_skip_speed_retain;
 extern ConVar sv_pk_skip_jump_height_fraction;
+extern ConVar sv_pk_viewpunch_fall_distmin;
+extern ConVar sv_pk_viewpunch_fall_distmax;
+extern ConVar sv_pk_viewpunch_fall_distmaxscale;
 
 #endif // MOVEVARS_SHARED_H
