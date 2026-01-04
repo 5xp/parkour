@@ -344,17 +344,125 @@ sv_pk_wallrun_timelimit(
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Wallrun max duration.");
 ConVar
+sv_pk_wallrun_upwallboost(
+	"sv_pk_wallrun_upwallboost",
+	"250",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"The maximum amount of vertical impulse applied when beginning a wallrun.");
+ConVar
 sv_pk_wallrun_maxspeed_horizontal(
 	"sv_pk_wallrun_maxspeed_horizontal",
-	"340.0",
+	"340",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Maximum horizontal speed while wallrunning.");
 ConVar
-sv_pk_wallrun_accel(
-	"sv_pk_wallrun_accel",
+sv_pk_wallrun_maxspeed_horizontal_backwards(
+	"sv_pk_wallrun_maxspeed_horizontal_backwards",
+	"50",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Maximum horizontal speed while wallrunning backwards.");
+ConVar
+sv_pk_wallrun_maxspeed_vertical(
+	"sv_pk_wallrun_maxspeed_vertical",
+	"225",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Maximum vertical speed while wallrunning.");
+ConVar
+sv_pk_wallrun_accel_horizontal(
+	"sv_pk_wallrun_accel_horizontal",
 	"1400",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Wallrun acceleration.");
+	"Horizontal wallrun acceleration.");
+ConVar
+sv_pk_wallrun_accel_vertical(
+	"sv_pk_wallrun_accel_vertical",
+	"360",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Vertical wallrun acceleration.");
+ConVar
+sv_pk_wallrun_gravity_rampuptime(
+	"sv_pk_wallrun_gravity_rampuptime",
+	"1",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Wallrun gravity ramps up to 0 to full in this amount of seconds after beginning a wallrun.");
+ConVar
+sv_pk_wallrun_fallawayspeed(
+	"sv_pk_wallrun_fallawayspeed",
+	"70",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Impulse away from the wall when falling off.");
+ConVar
+sv_pk_wallrun_pushaway_fallofftime(
+	"sv_pk_wallrun_pushaway_fallofftime",
+	"0.05",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Time pushing away from the wall before falling off.");
+ConVar
+sv_pk_wallrun_noinput_slipfrac(
+	"sv_pk_wallrun_noinput_slipfrac",
+	"0.7",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Minimum fraction of slip behavior when no input is applied.");
+ConVar
+sv_pk_wallrun_upwardautopush(
+	"sv_pk_wallrun_upwardautopush",
+	"0.65",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Amount of automatic upward input when moving forward on a wall.");
+ConVar
+sv_pk_wallrun_anglechange_mincos(
+	"sv_pk_wallrun_anglechange_mincos",
+	"0.8",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Cosine threshold for maximum wall angle change away from you before falling off.");
+ConVar
+sv_pk_wallrun_rotate_maxrate(
+	"sv_pk_wallrun_rotate_maxrate",
+	"3",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Maximum wallrun rotation rate in radians per second.");
+ConVar
+sv_pk_wallrun_avoid_top_wall_decel(
+	"sv_pk_wallrun_avoid_top_wall_decel",
+	"3000",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Deceleration applied to avoid running off the top edge of a wall.");
+ConVar
+sv_pk_wallrun_samewall_dot(
+	"sv_pk_wallrun_samewall_dot",
+	"0.9",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Dot product threshold for treating a wall as the same wall.");
+ConVar
+sv_pk_wallrun_samewall_height(
+	"sv_pk_wallrun_samewall_height",
+	"0",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Maximum height above the last wallrun start position for reattaching.");
+ConVar
+sv_pk_wallrun_allowed_wall_dist(
+	"sv_pk_wallrun_allowed_wall_dist",
+	"13",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Allowed distance the feet may be from the wall.");
+ConVar
+sv_pk_wallrun_slip_starttime(
+	"sv_pk_wallrun_slip_starttime",
+	"2",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Time wallrunning before slipping begins.");
+ConVar
+sv_pk_wallrun_slip_duration(
+	"sv_pk_wallrun_slip_duration",
+	"1",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Time for wallrun slipping to reach full effect.");
+ConVar
+sv_pk_wallrun_viewtilt_predict_time(
+	"sv_pk_wallrun_viewtilt_predict_time",
+	"0.25",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Prediction before wallrun to start view tilt.");
 ConVar
 sv_pk_wallrun_viewtilt_max(
 	"sv_pk_wallrun_viewtilt_max",
