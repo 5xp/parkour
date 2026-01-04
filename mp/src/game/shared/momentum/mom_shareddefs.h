@@ -260,16 +260,6 @@ enum AirJumpState
     AIRJUMP_DONE          // Player has airjumped already
 };
 
-enum WallRunState
-{
-    WALLRUN_NOT = 0, // Not wallrunning
-    WALLRUN_LEAN_IN, // About to start wall running, lean in
-    WALLRUN_RUNNING, // Wallrunning
-    WALLRUN_JUMPING, // Jumping off the wall
-    WALLRUN_STALL,   // Wallrunning, but facing into the wall or otherwise not moving along it
-    WALLRUN_SCRAMBLE // basically waterjumping - vertical velocity is allowed
-};
-
 #define PANEL_REPLAY "replaycontrols"
 #define PANEL_TRICK_LIST "tricks"
 

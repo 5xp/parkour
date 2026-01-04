@@ -62,19 +62,21 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
 
     m_iLandTick = 0;
     m_iJumpTick = 0;
-    m_bIsSprinting = false;
-    m_bIsWalking = false;
     m_bAutoBhop = true;
     m_CurrentSlideTrigger = nullptr;
     m_RunStats.Init();
     m_fDuckTimer = 0.0f;
 
+    m_bIsWalking = false;
+    m_bIsSprinting = false;
     m_bIsPowerSliding = false;
     m_flLastSlideBoost = 0.0f;
     m_bDoFOVScale = false;
     m_flFOVScaleFrac = 0.0f;
-    m_nWallRunState = WALLRUN_NOT;
-    m_bWasSprinting = false;
+
+    m_bIsWallRunning = false;
+    m_vecWallNormal.Init();
+    m_vecTargetWallNormal.Init();
 
     m_nButtonsToggled = 0;
 }

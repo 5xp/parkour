@@ -120,10 +120,6 @@ MAKE_TOGGLE_CONVAR(sv_duck_collision_fix, "1", FCVAR_MAPPING, "Fixes headbugs by
 MAKE_TOGGLE_CONVAR(sv_ground_trigger_fix, "1", FCVAR_MAPPING, "Fixes being able to jump off the ground if grounded with a trigger under the player (bounces and jumpbugs). 1 = ON, 0 = OFF.\n");
 MAKE_TOGGLE_CONVAR(sv_edge_fix, "1", FCVAR_MAPPING, "Makes edgebugs more consistent and allows for bunnyhopping instead of edgebugging. 1 = ON, 0 = OFF.\n");
 
-#define DEFAULT_WALLRUN_TIME_STRING "2000.0"
-#define DEFAULT_WALLRUN_SPEED_STRING "300.0"
-#define DEFAULT_WALLRUN_BOOST_STRING "60.0"
-
 MAKE_TOGGLE_CONVAR(mom_pk_autosprint_enable, "1", FCVAR_ARCHIVE | FCVAR_USERINFO, "Enable autosprint.");
 
 ConVar
@@ -342,126 +338,41 @@ sv_pk_wallrun_jump_inputdirspeed(
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Speed achieved in the direction of input from walljumping.");
 ConVar
-sv_pk_wallrun_time(
-	"sv_pk_wallrun_time",
-	DEFAULT_WALLRUN_TIME_STRING,
+sv_pk_wallrun_timelimit(
+	"sv_pk_wallrun_timelimit",
+	"1.75",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Wallrun max duration.");
 ConVar
-sv_pk_wallrun_anticipation(
-	"sv_pk_wallrun_anticipation",
-	"2",
+sv_pk_wallrun_maxspeed_horizontal(
+	"sv_pk_wallrun_maxspeed_horizontal",
+	"340.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"0 - none, 1 - Eye roll only, 2 - Full (bumps).");
-
-ConVar
-sv_pk_wallrun_boost(
-	"sv_pk_wallrun_boost",
-	DEFAULT_WALLRUN_BOOST_STRING,
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Wallrun speed boost.");
-ConVar
-sv_pk_wallrun_speed(
-	"sv_pk_wallrun_speed",
-	DEFAULT_WALLRUN_SPEED_STRING,
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Wallrun speed.");
+	"Maximum horizontal speed while wallrunning.");
 ConVar
 sv_pk_wallrun_accel(
 	"sv_pk_wallrun_accel",
-	"4.25",
+	"1400",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Wallrun acceleration.");
-
 ConVar
-sv_pk_wallrun_roll(
-	"sv_pk_wallrun_roll",
-	"14.0",
+sv_pk_wallrun_viewtilt_max(
+	"sv_pk_wallrun_viewtilt_max",
+	"15.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Wallrun view roll angle.");
-
-ConVar
-sv_pk_wallrun_max_rise(
-	"sv_pk_wallrun_max_rise",
-	"25.0",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Wallrun upward limit.");
-
-ConVar
-sv_pk_wallrun_min_rise(
-	"sv_pk_wallrun_min_rise",
-	"-50.0",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Wallrun downward limit.");
-
-ConVar
-sv_pk_wallrun_scramble_z(
-	"sv_pk_wallrun_scramble_z",
-	"28.0",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Height we can climb to.");
-
-ConVar
-sv_pk_wallrun_lookahead(
-	"sv_pk_wallrun_lookahead",
-	"0.22",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Amount of time (in seconds) to lookahead for bumps or corners when wallrunning.");
-
-ConVar
-sv_pk_wallrun_inness(
-	"sv_pk_wallrun_inness",
-	"360",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Scaling factor for how much to steer inward toward the wall when wallrunning");
-ConVar
-sv_pk_wallrun_outness(
-	"sv_pk_wallrun_outness",
-	"300",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Scaling factor for how much to steer outward around obstacles when wallrunning");
-
-ConVar
-sv_pk_wallrun_lookness(
-	"sv_pk_wallrun_lookness",
-	"1",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Scaling factor for how much to adjust view to look where you're going when wallrunning");
-ConVar
-sv_pk_wallrun_feet_z(
-	"sv_pk_wallrun_feet_z",
-	"10",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Fudge for starting a wallrun with your feet below the bottom edge of the wall");
-
-ConVar
-sv_pk_wallrun_stick_angle(
-	"sv_pk_wallrun_stick_angle",
-	"45",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Min angle away from wall norm for player to wallrun");
-
-ConVar
-sv_pk_wallrun_corner_stick_angle(
-	"sv_pk_wallrun_corner_stick_angle",
-	"80",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"End wallrun at end of wall if facing within this angle of wall norm");
-
+	"Maximum amount of view tilt in degrees while wallrunning.");
 ConVar
 sv_pk_coyote_time(
 	"sv_pk_coyote_time",
 	"0.2",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Time after leaving a surface that jumps are still allowed.");
-
 ConVar
 sv_pk_slide_lock(
 	"sv_pk_slide_lock",
 	"1",
 	FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_ARCHIVE,
 	"Locks your move direction when sliding");
-
 ConVar
 sv_pk_viewpunch_fall_distmin(
 	"sv_pk_viewpunch_fall_distmin",

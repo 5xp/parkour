@@ -1838,7 +1838,9 @@ void CGameMovement::Accelerate( Vector& wishdir, float wishspeed, float accel )
 		return;
 
 	// Determine amount of acceleration.
-	accelspeed = accel * gpGlobals->frametime * wishspeed * player->m_surfaceFriction;
+	accelspeed = accel * gpGlobals->frametime;
+	if (!g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+		accelspeed *= wishspeed * player->m_surfaceFriction;
 
 	// Cap at addspeed
 	if (accelspeed > addspeed)

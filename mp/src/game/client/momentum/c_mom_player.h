@@ -107,22 +107,17 @@ public:
     virtual void StopPowerSlideSound();
     virtual void PlayWallRunSound(const Vector &vecOrigin);
     virtual void StopWallRunSound();
-
-    Vector GetEscapeVel() const { return m_vecCornerEscapeVel; }
-    void SetEscapeVel(const Vector &vecNewYaw) { m_vecCornerEscapeVel = vecNewYaw; }
-
 private:
     // Mobility mod (parkour)
-    bool m_bWasSprinting;
     CNetworkVar(bool, m_bIsPowerSliding);
     CNetworkVar(bool, m_bDoFOVScale);
     float m_flLastSlideBoost;
     float m_flFOVScaleFrac;
-    WallRunState m_nWallRunState;
-    Vector m_vecWallNorm;
-    float m_flAutoViewTime; // if wallrunning, when should start adjusting the view 
-    bool m_bWallRunBumpAhead; // are we moving out from the wall anticipating a bump?
-    Vector m_vecLastWallRunPos; // Position when we ended the last wallrun
+
+    bool m_bIsWallRunning;
+    Vector m_vecTargetWallNormal;
+    Vector m_vecWallNormal;
+
     AirJumpState m_nAirJumpState; // Is the airjump ready, in progress, or done?
     // Is the player allowed to jump while in the air
     bool CanAirJump() const
@@ -138,11 +133,6 @@ private:
     // technically airborn. Compensating for player's perception/reflexes.
     // This is the absolute time until which we allow the special jump
     float m_flCoyoteTime; 
-
-    // Sometimes we want to have a little cooldown for wallrunning - 
-    // mostly if a wallrun ended because it was above a doorway
-    float m_flNextWallRunTime;
-    Vector m_vecCornerEscapeVel;
 
     // Ladder stuff
     float m_flGrabbableLadderTime;

@@ -57,7 +57,6 @@ public:
 	CNetworkVar( float, m_flJumpTime );
 	// Mobility - power slide time
 	CNetworkVar(float, m_slideBoostCooldown); // MOM_TODO: Network these??
-	CNetworkVar(float, m_flWallRunTime);
 	// Step sound side flip/flip
 	int m_nStepside;
 	// Velocity at time when we hit ground

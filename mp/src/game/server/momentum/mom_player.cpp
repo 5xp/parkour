@@ -259,7 +259,10 @@ CMomentumPlayer::CMomentumPlayer()
     m_bIsPowerSliding = false;
     m_flLastSlideBoost = 0.0f;
     m_bDoFOVScale = false;
-    m_nWallRunState = WALLRUN_NOT;
+
+    m_bIsWallRunning = false;
+    m_vecWallNormal.Init();
+    m_vecTargetWallNormal.Init();
 
     m_nButtonsToggled = 0;
 }
@@ -789,9 +792,9 @@ void CMomentumPlayer::ToggleWalk(bool bShouldWalk)
 void CMomentumPlayer::DeriveMaxSpeed()
 {
     float newMaxSpeed;
-    if (m_nWallRunState >= WALLRUN_RUNNING)
+    if (m_bIsWallRunning)
     {
-        newMaxSpeed = sv_pk_wallrun_speed.GetFloat();
+        newMaxSpeed = sv_pk_wallrun_maxspeed_horizontal.GetFloat();
     }
     else if (m_bIsSprinting)
     {

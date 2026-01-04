@@ -88,9 +88,6 @@ public:
     void DoAirJump();
     void DoWallJump();
 
-    // Check if only touching wall with head/upper body
-    void            CheckFeetCanReachWall();
-
     // Special friction for powersliding
     void            PowerSlideFriction();
 
@@ -101,10 +98,6 @@ public:
     // End powerslide - reset the vars, stop the sound
     virtual void    EndPowerSlide();
 
-    virtual void    AnticipateWallRun();
-
-    virtual bool    CheckForSteps(const Vector &startpos, const Vector &vel);
-
     // Get the yaw angle between the player and the wall normal
     virtual float   GetWallRunYaw();
 
@@ -112,30 +105,11 @@ public:
     // i.e. hit a suitable wall while airborn.
     virtual void    CheckWallRun(Vector &vecWallNormal, trace_t &pm);
 
-    // Check if player can scramble up on top of obstacle
-    virtual void    CheckWallRunScramble(bool &steps);
-
-    // Calculate the wallrun view roll angle based on the 
-    // yaw angle between the player and the wall
-    virtual float   GetWallRunRollAngle();
-
     // Handle wallrun movement
     virtual void    WallRunMove();
 
-    // Handle step-like bits of the wall when wallrunning
-    // (basically step move except wallnorm instead of up)
-    virtual void	WallRunAnticipateBump();
-
-    // Try not to get stuck moving in to a corner that is small
-    // and we could easily step around it.
-    virtual void    WallRunEscapeCorner(Vector &wishdir);
-    virtual bool    TryEscape(Vector &posD, float rotation, Vector move);
-
     // Handle end of wallrun - set vars, stop sound
     virtual void    EndWallRun();
-
-    // Parkour's version of WaterJump
-    void WaterJumpParkour();
 
     void RedirectVelocity(const Vector &wishdir, Vector velocity, const float maxDelta, const float strengthFrac, const float targetSpeed);
     void PerformLurchChecks();
