@@ -2152,6 +2152,11 @@ void CMomentumGameMovement::FullWalkMove()
         if (!InWater())
         {
             FinishGravity();
+            // If we are on ground, no downward velocity.
+            if (player->GetGroundEntity() != nullptr)
+            {
+                mv->m_vecVelocity[2] = 0.f;
+            }
         }
 
         // Make sure velocity is valid.
