@@ -8,11 +8,22 @@
 #include "tier0/memdbgon.h"
 #include "movevars_shared.h"
 
+#include "mom_system_gamemode.h"
+// band-aid solution for a crash when including mom_system_gamemode.h
+#ifdef CMomentumPlayer
+#undef CMomentumPlayer
+#endif
+
 IMPLEMENT_CLIENTCLASS_DT(C_MomentumPlayer, DT_MOM_Player, CMomentumPlayer)
 RecvPropBool(RECVINFO(m_bIsSprinting)),
 RecvPropBool(RECVINFO(m_bIsWalking)),
 RecvPropBool(RECVINFO(m_bIsPowerSliding)),
 RecvPropBool(RECVINFO(m_bDoFOVScale)),
+RecvPropBool(RECVINFO(m_bIsWallrunning)),
+RecvPropFloat(RECVINFO(m_flWallrunStartTime)),
+RecvPropVector(RECVINFO(m_vecWallNormal)),
+RecvPropVector(RECVINFO(m_vecPredictedWallNormal)),
+RecvPropBool(RECVINFO(m_bHasPredictedWallNormal)),
 RecvPropBool(RECVINFO(m_bHasPracticeMode)),
 RecvPropBool(RECVINFO(m_bPreventPlayerBhop)),
 RecvPropInt(RECVINFO(m_iJumpTick)),
@@ -74,9 +85,18 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_bDoFOVScale = false;
     m_flFOVScaleFrac = 0.0f;
 
-    m_bIsWallRunning = false;
+    m_bIsWallrunning = false;
+    m_flWallrunStartTime = 0.0f;
+    m_bWallrunHasBoost = false;
+    m_bWallrunWeak = false;
+    m_bHasLastWallrunStartPos = false;
+    m_vecWallrunTilt.Init();
     m_vecWallNormal.Init();
+    m_vecPredictedWallNormal.Init();
+    m_bHasPredictedWallNormal = false;
     m_vecTargetWallNormal.Init();
+    m_vecLastWallNormal.Init();
+    m_vecLastWallrunStartPos.Init();
 
     m_nButtonsToggled = 0;
 }
@@ -217,6 +237,15 @@ void C_MomentumPlayer::CalcViewRoll(QAngle &eyeAngles)
 {
     BaseClass::CalcViewRoll(eyeAngles);
 
+    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+        return;
+
+    ApplySlideViewTilt(eyeAngles);
+    ApplyWallrunViewTilt(eyeAngles);
+}
+
+void C_MomentumPlayer::ApplySlideViewTilt(QAngle &eyeAngles)
+{
     Vector velocity = GetAbsVelocity();
     velocity.z = 0.0f;
 
@@ -247,6 +276,49 @@ void C_MomentumPlayer::CalcViewRoll(QAngle &eyeAngles)
     float totalRoll = angleFrac * sv_pk_slide_viewtilt_side.GetFloat();
 
     eyeAngles[ROLL] += totalRoll;
+}
+
+void C_MomentumPlayer::ApplyWallrunViewTilt(QAngle &eyeAngles)
+{
+    Vector forward;
+    AngleVectors(eyeAngles, &forward);
+
+    const float wallrunTime = gpGlobals->curtime - m_flWallrunStartTime;
+    const float wallrunTimeLimit = sv_pk_wallrun_timelimit.GetFloat();
+    const bool wallrunEndingSoon = m_bIsWallrunning && wallrunTime > wallrunTimeLimit - PK_WALLRUN_OUT_TIME;
+
+    const float tiltSpeed = wallrunEndingSoon ? (1.0f / PK_WALLRUN_OUT_TIME) : sv_pk_wallrun_viewtilt_speed.GetFloat();
+
+    Vector approachTo = vec3_origin;
+    if (!wallrunEndingSoon)
+    {
+        if (m_bIsWallrunning)
+        {
+            approachTo = m_vecWallNormal;
+        }
+        else if (m_bHasPredictedWallNormal)
+        {
+            approachTo = m_vecPredictedWallNormal;
+        }
+    }
+    Vector delta = approachTo - m_vecWallrunTilt;
+    const float deltaLen = delta.Length();
+    const float maxStep = tiltSpeed * gpGlobals->frametime;
+    if (deltaLen > maxStep && maxStep > 0.0f)
+    {
+        delta *= maxStep / deltaLen;
+    }
+    m_vecWallrunTilt += delta;
+
+    Vector tiltNormal = m_vecWallrunTilt;
+    const float tiltLen = tiltNormal.NormalizeInPlace();
+    const float eased = sinf(clamp(tiltLen, 0.0f, 1.0f) * M_PI_F * 0.5f);
+    const float tilt = Lerp(eased, 0.0f, sv_pk_wallrun_viewtilt_max.GetFloat());
+
+    Vector cross;
+    CrossProduct(forward, tiltNormal, cross);
+    const float wallrunRoll = -tilt * cross.z;
+    eyeAngles[ROLL] += wallrunRoll;
 }
 
 float C_MomentumPlayer::GetFOV()

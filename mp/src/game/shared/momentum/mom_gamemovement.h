@@ -103,10 +103,11 @@ public:
 
     // Check if player should start wallrunning,
     // i.e. hit a suitable wall while airborn.
-    virtual void    CheckWallRun(Vector &vecWallNormal, trace_t &pm);
+    virtual void    OnWallTouch(Vector &vecWallNormal, trace_t &pm);
 
     // Handle wallrun movement
-    virtual void    WallRunMove();
+    virtual void    DoWallRunFriction(Vector &velocity, const float friction);
+    virtual void    WallrunMove();
 
     // Handle end of wallrun - set vars, stop sound
     virtual void    EndWallRun();
@@ -116,6 +117,13 @@ public:
 
 private:
     CMomentumPlayer *m_pPlayer;
+
+    bool CanFeetReachWall(const Vector &position, const Vector &wallNormal);
+    bool IsNearTopWall(const Vector &position, const Vector &wallNormal);
+    bool IsStep(const Vector &position, const Vector &wallNormal);
+    bool IsWallEligibleForWallrun(const Vector &wallPosition, const Vector &wallNormal, bool &outWeak);
+    float GetWallrunGravityScale();
+    void PredictWallrun();
 
     bool m_bCheckForGrabbableLadder;
 };

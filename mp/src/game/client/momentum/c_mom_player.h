@@ -108,15 +108,27 @@ public:
     virtual void PlayWallRunSound(const Vector &vecOrigin);
     virtual void StopWallRunSound();
 private:
+    void ApplySlideViewTilt(QAngle &eyeAngles);
+    void ApplyWallrunViewTilt(QAngle &eyeAngles);
+
     // Mobility mod (parkour)
     CNetworkVar(bool, m_bIsPowerSliding);
     CNetworkVar(bool, m_bDoFOVScale);
     float m_flLastSlideBoost;
     float m_flFOVScaleFrac;
 
-    bool m_bIsWallRunning;
+    CNetworkVar(bool, m_bIsWallrunning);
+    CNetworkVar(float, m_flWallrunStartTime);
+    bool m_bWallrunHasBoost;
+    bool m_bWallrunWeak;
+    bool m_bHasLastWallrunStartPos;
+    Vector m_vecWallrunTilt;
+    CNetworkVector(m_vecWallNormal);
+    CNetworkVector(m_vecPredictedWallNormal);
+    CNetworkVar(bool, m_bHasPredictedWallNormal);
     Vector m_vecTargetWallNormal;
-    Vector m_vecWallNormal;
+    Vector m_vecLastWallNormal;
+    Vector m_vecLastWallrunStartPos;
 
     AirJumpState m_nAirJumpState; // Is the airjump ready, in progress, or done?
     // Is the player allowed to jump while in the air

@@ -139,6 +139,11 @@ SendPropExclude("DT_BaseAnimating", "m_nMuzzleFlashParity"),
 SendPropBool(SENDINFO(m_bIsSprinting)),
 SendPropBool(SENDINFO(m_bIsPowerSliding)),
 SendPropBool(SENDINFO(m_bDoFOVScale)),
+SendPropBool(SENDINFO(m_bIsWallrunning)),
+SendPropFloat(SENDINFO(m_flWallrunStartTime)),
+SendPropVector(SENDINFO(m_vecWallNormal)),
+SendPropVector(SENDINFO(m_vecPredictedWallNormal)),
+SendPropBool(SENDINFO(m_bHasPredictedWallNormal)),
 SendPropBool(SENDINFO(m_bIsWalking)),
 SendPropBool(SENDINFO(m_bHasPracticeMode)),
 SendPropBool(SENDINFO(m_bPreventPlayerBhop)),
@@ -260,9 +265,17 @@ CMomentumPlayer::CMomentumPlayer()
     m_flLastSlideBoost = 0.0f;
     m_bDoFOVScale = false;
 
-    m_bIsWallRunning = false;
+    m_bIsWallrunning = false;
+    m_flWallrunStartTime = 0.0f;
+    m_bWallrunHasBoost = false;
+    m_bWallrunWeak = false;
+    m_bHasLastWallrunStartPos = false;
     m_vecWallNormal.Init();
+    m_vecPredictedWallNormal.Init();
+    m_bHasPredictedWallNormal = false;
     m_vecTargetWallNormal.Init();
+    m_vecLastWallNormal.Init();
+    m_vecLastWallrunStartPos.Init();
 
     m_nButtonsToggled = 0;
 }
@@ -792,7 +805,7 @@ void CMomentumPlayer::ToggleWalk(bool bShouldWalk)
 void CMomentumPlayer::DeriveMaxSpeed()
 {
     float newMaxSpeed;
-    if (m_bIsWallRunning)
+    if (m_bIsWallrunning)
     {
         newMaxSpeed = sv_pk_wallrun_maxspeed_horizontal.GetFloat();
     }

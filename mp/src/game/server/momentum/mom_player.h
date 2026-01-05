@@ -298,9 +298,17 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     CNetworkVar(bool, m_bDoFOVScale);
     float m_flLastSlideBoost;
 
-    bool m_bIsWallRunning;
+    CNetworkVar(bool, m_bIsWallrunning);
+    CNetworkVar(float, m_flWallrunStartTime);
+    bool m_bWallrunHasBoost;
+    bool m_bWallrunWeak;
+    bool m_bHasLastWallrunStartPos;
+    CNetworkVector(m_vecWallNormal);
+    CNetworkVector(m_vecPredictedWallNormal);
+    CNetworkVar(bool, m_bHasPredictedWallNormal);
     Vector m_vecTargetWallNormal;
-    Vector m_vecWallNormal;
+    Vector m_vecLastWallNormal;
+    Vector m_vecLastWallrunStartPos;
 
     AirJumpState m_nAirJumpState; // Is the airjump ready, in progress, or done?
     // Is the player allowed to jump while in the air

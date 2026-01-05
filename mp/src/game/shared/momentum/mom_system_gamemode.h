@@ -185,9 +185,7 @@ public:
 #define PK_CROUCH_SPEED     80.0f
 #define PK_NORM_SPEED       162.5f
 #define PK_SPRINT_SPEED     243.0f
-
-#define PK_CORNER_ESC_SPEED 80.0f
-#define PK_WALLRUN_OUT_TIME 500.0f // start easing out of the wallrun for last 500 ms
+#define PK_WALLRUN_OUT_TIME 0.5f // start easing out of the wallrun for last 0.5s
 
 class CGameMode_Parkour : public CGameModeBase
 {

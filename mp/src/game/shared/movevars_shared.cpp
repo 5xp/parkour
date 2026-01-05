@@ -350,6 +350,12 @@ sv_pk_wallrun_upwallboost(
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"The maximum amount of vertical impulse applied when beginning a wallrun.");
 ConVar
+sv_pk_wallrun_friction(
+	"sv_pk_wallrun_friction",
+	"4",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Friction while wallrunning.");
+ConVar
 sv_pk_wallrun_maxspeed_horizontal(
 	"sv_pk_wallrun_maxspeed_horizontal",
 	"340",
@@ -463,6 +469,12 @@ sv_pk_wallrun_viewtilt_predict_time(
 	"0.25",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Prediction before wallrun to start view tilt.");
+ConVar
+sv_pk_wallrun_viewtilt_speed(
+	"sv_pk_wallrun_viewtilt_speed",
+	"4.0",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Speed at which wallrun view tilt increases.");
 ConVar
 sv_pk_wallrun_viewtilt_max(
 	"sv_pk_wallrun_viewtilt_max",
