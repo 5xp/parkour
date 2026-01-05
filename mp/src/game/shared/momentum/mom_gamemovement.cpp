@@ -1664,12 +1664,11 @@ void CMomentumGameMovement::DoWallJump()
 
     const Vector wallNormal = m_pPlayer->m_vecWallNormal;
     const float upSpeed = sv_pk_wallrun_jump_upspeed.GetFloat();
-    float outSpeed = sv_pk_wallrun_jump_outwardspeed.GetFloat();
     const float inputDirSpeed = sv_pk_wallrun_jump_inputdirspeed.GetFloat();
+    float outSpeed = sv_pk_wallrun_jump_outwardspeed.GetFloat();
 
-    Vector wishdir;
-    for (int i = 0; i < 3; i++)
-        wishdir[i] = m_vecForward[i] * mv->m_flForwardMove + m_vecRight[i] * mv->m_flSideMove;
+    Vector wishdir = m_vecForward * mv->m_flForwardMove + m_vecRight * mv->m_flSideMove;
+    wishdir.z = 0.0f;
     VectorNormalize(wishdir);
 
     Vector forward2D = m_vecForward;
@@ -1696,11 +1695,11 @@ void CMomentumGameMovement::DoWallJump()
 
     Vector inputDirImpulse = inputDirSpeed * wishdir;
 
-    float inputIntoWall = inputDirImpulse.Dot(wallNormal);
+    const float inputIntoWall = inputDirImpulse.Dot(wallNormal);
     if (inputIntoWall < 0.0f)
     {
+        // Cancel the component of input going into the wall
         inputDirImpulse += wallNormal * -inputIntoWall;
-        inputIntoWall = 0.0f;
     }
 
     Vector horizontalImpulse = inputDirImpulse;
