@@ -287,7 +287,11 @@ void C_MomentumPlayer::ApplyWallrunViewTilt(QAngle &eyeAngles)
     const float wallrunTimeLimit = sv_pk_wallrun_timelimit.GetFloat();
     const bool wallrunEndingSoon = m_bIsWallrunning && wallrunTime > wallrunTimeLimit - PK_WALLRUN_OUT_TIME;
 
-    const float tiltSpeed = wallrunEndingSoon ? (1.0f / PK_WALLRUN_OUT_TIME) : sv_pk_wallrun_viewtilt_speed.GetFloat();
+    // convert angular speed to linear speed
+    float tiltSpeed = sv_pk_wallrun_viewtilt_speed.GetFloat() / (M_PI_F * 0.5f); 
+
+    if (wallrunEndingSoon)
+        tiltSpeed = 1.0f / PK_WALLRUN_OUT_TIME;
 
     Vector approachTo = vec3_origin;
     if (!wallrunEndingSoon)

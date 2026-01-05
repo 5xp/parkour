@@ -472,9 +472,9 @@ sv_pk_wallrun_viewtilt_predict_time(
 ConVar
 sv_pk_wallrun_viewtilt_speed(
 	"sv_pk_wallrun_viewtilt_speed",
-	"4.0",
+	"6.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Speed at which wallrun view tilt increases.");
+	"Speed at which wallrun view tilt increases in radians/sec.");
 ConVar
 sv_pk_wallrun_viewtilt_max(
 	"sv_pk_wallrun_viewtilt_max",
