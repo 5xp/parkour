@@ -1662,7 +1662,7 @@ void CMomentumGameMovement::DoWallJump()
 {
     player->m_Local.m_vecPunchAngleVel += SampleViewPunch(ViewPunchEvent::JUMP) * PK_VIEWPUNCH_SCALE;
 
-    const Vector wallNormal = m_pPlayer->m_vecWallNormal;
+    const Vector wallNormal = m_pPlayer->m_vecLastWallNormal;
     const float upSpeed = sv_pk_wallrun_jump_upspeed.GetFloat();
     const float inputDirSpeed = sv_pk_wallrun_jump_inputdirspeed.GetFloat();
     float outSpeed = sv_pk_wallrun_jump_outwardspeed.GetFloat();
@@ -3453,10 +3453,10 @@ void CMomentumGameMovement::PredictWallrun()
     if (!g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
         return;
 
-    m_pPlayer->m_bHasPredictedWallNormal = false;
-
     if (m_pPlayer->m_bIsWallrunning)
         return;
+
+    m_pPlayer->m_vecWallNormal = vec3_origin;
 
     if (player->GetGroundEntity() != nullptr)
         return;
@@ -3481,8 +3481,7 @@ void CMomentumGameMovement::PredictWallrun()
     if (!IsWallEligibleForWallrun(tr.endpos, tr.plane.normal, isWeak))
         return;
 
-    m_pPlayer->m_vecPredictedWallNormal = tr.plane.normal;
-    m_pPlayer->m_bHasPredictedWallNormal = true;
+    m_pPlayer->m_vecWallNormal = tr.plane.normal;
 }
 
 // Handle wallrun movement and friction
@@ -3546,6 +3545,8 @@ void CMomentumGameMovement::EndWallRun()
 {
     if (!m_pPlayer->m_bIsWallrunning)
         return;
+
+    m_pPlayer->m_vecWallNormal = vec3_origin;
 
     //Msg( "End Wallrun\n" );
     //m_pPlayer->StopWallRunSound();

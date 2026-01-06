@@ -142,8 +142,6 @@ SendPropBool(SENDINFO(m_bDoFOVScale)),
 SendPropBool(SENDINFO(m_bIsWallrunning)),
 SendPropFloat(SENDINFO(m_flWallrunStartTime)),
 SendPropVector(SENDINFO(m_vecWallNormal)),
-SendPropVector(SENDINFO(m_vecPredictedWallNormal)),
-SendPropBool(SENDINFO(m_bHasPredictedWallNormal)),
 SendPropBool(SENDINFO(m_bIsWalking)),
 SendPropBool(SENDINFO(m_bHasPracticeMode)),
 SendPropBool(SENDINFO(m_bPreventPlayerBhop)),
@@ -271,8 +269,6 @@ CMomentumPlayer::CMomentumPlayer()
     m_bWallrunWeak = false;
     m_bHasLastWallrunStartPos = false;
     m_vecWallNormal.Init();
-    m_vecPredictedWallNormal.Init();
-    m_bHasPredictedWallNormal = false;
     m_vecTargetWallNormal.Init();
     m_vecLastWallNormal.Init();
     m_vecLastWallrunStartPos.Init();

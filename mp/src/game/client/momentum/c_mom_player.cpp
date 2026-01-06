@@ -22,8 +22,6 @@ RecvPropBool(RECVINFO(m_bDoFOVScale)),
 RecvPropBool(RECVINFO(m_bIsWallrunning)),
 RecvPropFloat(RECVINFO(m_flWallrunStartTime)),
 RecvPropVector(RECVINFO(m_vecWallNormal)),
-RecvPropVector(RECVINFO(m_vecPredictedWallNormal)),
-RecvPropBool(RECVINFO(m_bHasPredictedWallNormal)),
 RecvPropBool(RECVINFO(m_bHasPracticeMode)),
 RecvPropBool(RECVINFO(m_bPreventPlayerBhop)),
 RecvPropInt(RECVINFO(m_iJumpTick)),
@@ -92,8 +90,6 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_bHasLastWallrunStartPos = false;
     m_vecWallrunTilt.Init();
     m_vecWallNormal.Init();
-    m_vecPredictedWallNormal.Init();
-    m_bHasPredictedWallNormal = false;
     m_vecTargetWallNormal.Init();
     m_vecLastWallNormal.Init();
     m_vecLastWallrunStartPos.Init();
@@ -293,18 +289,7 @@ void C_MomentumPlayer::ApplyWallrunViewTilt(QAngle &eyeAngles)
     if (wallrunEndingSoon)
         tiltSpeed = 1.0f / PK_WALLRUN_OUT_TIME;
 
-    Vector approachTo = vec3_origin;
-    if (!wallrunEndingSoon)
-    {
-        if (m_bIsWallrunning)
-        {
-            approachTo = m_vecWallNormal;
-        }
-        else if (m_bHasPredictedWallNormal)
-        {
-            approachTo = m_vecPredictedWallNormal;
-        }
-    }
+    Vector approachTo = wallrunEndingSoon ? vec3_origin : m_vecWallNormal;
     Vector delta = approachTo - m_vecWallrunTilt;
     const float deltaLen = delta.Length();
     const float maxStep = tiltSpeed * gpGlobals->frametime;

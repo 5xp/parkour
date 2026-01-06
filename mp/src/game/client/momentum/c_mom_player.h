@@ -124,8 +124,6 @@ private:
     bool m_bHasLastWallrunStartPos;
     Vector m_vecWallrunTilt;
     CNetworkVector(m_vecWallNormal);
-    CNetworkVector(m_vecPredictedWallNormal);
-    CNetworkVar(bool, m_bHasPredictedWallNormal);
     Vector m_vecTargetWallNormal;
     Vector m_vecLastWallNormal;
     Vector m_vecLastWallrunStartPos;
