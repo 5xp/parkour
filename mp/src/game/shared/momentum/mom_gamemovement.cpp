@@ -3384,6 +3384,9 @@ void CMomentumGameMovement::OnWallTouch(Vector &vecWallNormal, trace_t &pm)
     if (!g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
         return;
 
+    if (player->GetMoveType() == MOVETYPE_NOCLIP)
+        return;
+
     if (m_pPlayer->m_bIsWallrunning)
         return;
 
@@ -3457,6 +3460,9 @@ float CMomentumGameMovement::GetWallrunGravityScale()
 void CMomentumGameMovement::PredictWallrun()
 {
     if (!g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+        return;
+
+    if (player->GetMoveType() == MOVETYPE_NOCLIP)
         return;
 
     if (m_pPlayer->m_bIsWallrunning)
