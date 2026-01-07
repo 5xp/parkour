@@ -3516,6 +3516,13 @@ void CMomentumGameMovement::CheckShouldWallrunEnd()
     {
         player->m_Local.m_vecPunchAngleVel += -SampleViewPunch(ViewPunchEvent::JUMP) * PK_VIEWPUNCH_SCALE;
         FallAwayFromWall(true);
+        return;
+    }
+
+    const float pushAwayTime = gpGlobals->curtime - m_pPlayer->m_flWallrunPushAwayTime;
+    if (m_pPlayer->m_flWallrunPushAwayTime != 0.0f && pushAwayTime > sv_pk_wallrun_pushaway_fallofftime.GetFloat())
+    {
+        FallAwayFromWall(true);
     }
 }
 
@@ -3563,8 +3570,19 @@ void CMomentumGameMovement::WallrunMove()
         Accelerate(vertWishDir, vertWishSpeed, sv_pk_wallrun_accel_vertical.GetFloat());
     }
 
-    // Clip velocity to stay on the current wall plane
     Vector wallNormal = m_pPlayer->m_vecWallNormal.Get();
+
+    // Check if we're pushing away from the wall
+    if (horzWishDir.Dot(wallNormal) <= 0.707f)
+    {
+        m_pPlayer->m_flWallrunPushAwayTime = 0.0f;
+    }
+    else if (m_pPlayer->m_flWallrunPushAwayTime == 0.0f)
+    {
+        m_pPlayer->m_flWallrunPushAwayTime = gpGlobals->curtime;
+    }
+
+    // Clip velocity to stay on the current wall plane
     ClipVelocity(mv->m_vecVelocity, wallNormal, mv->m_vecVelocity, 1.0f);
 
     int blocked = TryPlayerMove();
@@ -3587,6 +3605,7 @@ void CMomentumGameMovement::EndWallRun()
     //m_pPlayer->StopWallRunSound();
     m_pPlayer->m_nAirJumpState = AIRJUMP_NORM_JUMPING;
     m_pPlayer->m_bIsWallrunning = false;
+    m_pPlayer->m_flWallrunPushAwayTime = 0.0f;
 #ifdef GAME_DLL
     m_pPlayer->DeriveMaxSpeed();
 #endif

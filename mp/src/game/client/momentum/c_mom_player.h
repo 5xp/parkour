@@ -120,6 +120,7 @@ private:
     CNetworkVar(bool, m_bIsWallrunning);
     CNetworkVar(float, m_flWallrunStartTime);
     float m_flWallrunFallAwayTime;
+    float m_flWallrunPushAwayTime;
     bool m_bWallrunHasBoost;
     bool m_bWallrunWeak;
     bool m_bHasLastWallrunStartPos;

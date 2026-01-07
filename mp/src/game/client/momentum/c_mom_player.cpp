@@ -86,6 +86,7 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_bIsWallrunning = false;
     m_flWallrunStartTime = 0.0f;
     m_flWallrunFallAwayTime = 0.0f;
+    m_flWallrunPushAwayTime = 0.0f;
     m_bWallrunHasBoost = false;
     m_bWallrunWeak = false;
     m_bHasLastWallrunStartPos = false;
