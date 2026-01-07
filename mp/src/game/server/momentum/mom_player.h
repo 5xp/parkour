@@ -300,6 +300,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     CNetworkVar(bool, m_bIsWallrunning);
     CNetworkVar(float, m_flWallrunStartTime);
+    float m_flWallrunFallAwayTime;
     bool m_bWallrunHasBoost;
     bool m_bWallrunWeak;
     bool m_bHasLastWallrunStartPos;

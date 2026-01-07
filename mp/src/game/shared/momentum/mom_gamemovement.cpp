@@ -1446,7 +1446,8 @@ bool CMomentumGameMovement::CheckJumpButton()
     float startz = mv->m_vecVelocity[2];
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
     {
-        if (m_pPlayer->m_bIsWallrunning)
+        const bool bCoyoteWallJump = bCoyoteJump && m_pPlayer->m_flWallrunFallAwayTime != 0.0f;
+        if (m_pPlayer->m_bIsWallrunning || bCoyoteWallJump)
         {
             EndWallRun();
             DoWallJump();
@@ -1958,6 +1959,9 @@ void CMomentumGameMovement::FullWalkMove()
         CheckWater();
         return;
     }
+
+    // Make sure we haven't run out of wallrun time or aren't holding duck
+    CheckShouldWallrunEnd();
 
     // If we are swimming in the water, see if we are nudging against a place we can jump up out
     //  of, and, if so, start out jump.  Otherwise, if we are not moving up, then reset jump timer to 0
@@ -3011,6 +3015,7 @@ void CMomentumGameMovement::SetGroundEntity(const trace_t *pm)
             m_pPlayer->m_bHasLastWallrunStartPos = false;
             m_pPlayer->m_vecWallNormal.Init();
             m_pPlayer->m_vecTargetWallNormal.Init();
+            m_pPlayer->m_flWallrunFallAwayTime = 0.0f;
         }
     }
     else if (player->GetGroundEntity() && !(pm && pm->m_pEnt))
@@ -3394,6 +3399,7 @@ void CMomentumGameMovement::OnWallTouch(Vector &vecWallNormal, trace_t &pm)
 
     m_pPlayer->m_bIsWallrunning = true;
     m_pPlayer->m_flWallrunStartTime = gpGlobals->curtime;
+    m_pPlayer->m_flWallrunFallAwayTime = 0.0f;
     m_pPlayer->m_bWallrunWeak = isWeak;
     m_pPlayer->m_vecWallNormal = vecWallNormal;
     m_pPlayer->m_vecTargetWallNormal = vecWallNormal;
@@ -3484,6 +3490,35 @@ void CMomentumGameMovement::PredictWallrun()
     m_pPlayer->m_vecWallNormal = tr.plane.normal;
 }
 
+void CMomentumGameMovement::FallAwayFromWall(const bool giveCoyoteTime)
+{
+    EndWallRun();
+    mv->m_vecVelocity += m_pPlayer->m_vecLastWallNormal * sv_pk_wallrun_fallawayspeed.GetFloat();
+
+    m_pPlayer->m_flWallrunFallAwayTime = gpGlobals->curtime;
+    m_pPlayer->m_flCoyoteTime =
+        gpGlobals->curtime + (giveCoyoteTime ? sv_pk_coyote_time.GetFloat() : 0.0f);
+}
+
+void CMomentumGameMovement::CheckShouldWallrunEnd()
+{
+    if (!m_pPlayer->m_bIsWallrunning)
+        return;
+
+    if (mv->m_nButtons & IN_DUCK)
+    {
+        FallAwayFromWall(false);
+        return;
+    }
+
+    const float wallrunTime = gpGlobals->curtime - m_pPlayer->m_flWallrunStartTime;
+    if (wallrunTime > sv_pk_wallrun_timelimit.GetFloat())
+    {
+        player->m_Local.m_vecPunchAngleVel += -SampleViewPunch(ViewPunchEvent::JUMP) * PK_VIEWPUNCH_SCALE;
+        FallAwayFromWall(true);
+    }
+}
+
 // Handle wallrun movement and friction
 void CMomentumGameMovement::WallrunMove()
 {
@@ -3555,7 +3590,6 @@ void CMomentumGameMovement::EndWallRun()
 #ifdef GAME_DLL
     m_pPlayer->DeriveMaxSpeed();
 #endif
-    m_pPlayer->m_flCoyoteTime = gpGlobals->curtime + sv_pk_coyote_time.GetFloat();
 }
 
 // Expose our interface.

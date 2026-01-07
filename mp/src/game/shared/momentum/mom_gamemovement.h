@@ -118,6 +118,8 @@ public:
 private:
     CMomentumPlayer *m_pPlayer;
 
+    void FallAwayFromWall(const bool giveCoyoteTime);
+    void CheckShouldWallrunEnd();
     bool CanFeetReachWall(const Vector &position, const Vector &wallNormal);
     bool IsNearTopWall(const Vector &position, const Vector &wallNormal);
     bool IsStep(const Vector &position, const Vector &wallNormal);
