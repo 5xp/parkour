@@ -2457,7 +2457,6 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
     valid_plane.Init();
 
     Vector vecWallNormal;
-    bool   bWallNormSet = false;
 
     for (bumpcount = 0; bumpcount < numbumps; bumpcount++)
     {
@@ -2765,18 +2764,7 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
         if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR) && pm.plane.normal[2] < 0.7f)
         {
             blocked |= 2;
-
-            if (bWallNormSet)
-            {
-                // If we're touching two walls maybe we can avg out the normals? Maybe?
-                vecWallNormal = vecWallNormal + pm.plane.normal;
-                VectorNormalize(vecWallNormal);
-            }
-            else
-            {
-                VectorCopy(pm.plane.normal, vecWallNormal);
-                bWallNormSet = true;
-            }
+            vecWallNormal = pm.plane.normal;
         }
         else if (CloseEnough(pm.plane.normal[2], 0.0f, FLT_EPSILON))
         {
@@ -3409,6 +3397,9 @@ void CMomentumGameMovement::OnWallTouch(Vector &vecWallNormal, trace_t &pm)
     m_pPlayer->m_vecLastWallNormal = vecWallNormal;
     m_pPlayer->m_vecLastWallrunStartPos = mv->GetAbsOrigin();
     m_pPlayer->m_bHasLastWallrunStartPos = true;
+#ifdef GAME_DLL
+    m_pPlayer->DeriveMaxSpeed();
+#endif
 
     // If we've jumped since landing on the ground or touching the wall, give a boost
     const float upWallBoost = sv_pk_wallrun_upwallboost.GetFloat();
@@ -3532,6 +3523,138 @@ void CMomentumGameMovement::CheckShouldWallrunEnd()
     }
 }
 
+void CMomentumGameMovement::StayOnWall()
+{
+    const Vector oldWallNormal = m_pPlayer->m_vecWallNormal;
+
+    trace_t tr;
+    const Vector start = mv->GetAbsOrigin();
+    const Vector end = start - oldWallNormal * (player->GetStepSize() + sv_pk_wallrun_allowed_wall_dist.GetFloat());
+    TracePlayerBBox(start, end, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, tr);
+
+    if (tr.fraction < 1.0f && tr.plane.normal.z < 0.7f)
+    {
+        m_pPlayer->m_vecTargetWallNormal = tr.plane.normal;
+    }
+
+    // Give the wall normal a chance to catch up before we check if we can stick to the wall
+    UpdateWallNormal();
+
+    // Only snap to the wall if the angle change isn't too sharp
+    if (tr.fraction < 1.0f &&
+        tr.plane.normal.Dot(m_pPlayer->m_vecWallNormal) >= sv_pk_wallrun_anglechange_mincos.GetFloat())
+    {
+        mv->SetAbsOrigin(tr.endpos);
+    }
+    else if (!CanFeetReachWall(mv->GetAbsOrigin(), m_pPlayer->m_vecWallNormal))
+    {
+        FallAwayFromWall(true);
+    }
+}
+
+// Slerp the current wall normal to the desired wall normal
+void CMomentumGameMovement::UpdateWallNormal()
+{
+    Vector wallNormal = m_pPlayer->m_vecWallNormal;
+    const Vector targetWallNormal = m_pPlayer->m_vecTargetWallNormal;
+    const float dot = clamp(wallNormal.Dot(targetWallNormal), -1.0f, 1.0f);
+    const float angle = acosf(dot);
+    if (angle > 0.0f)
+    {
+        const float maxStep = sv_pk_wallrun_rotate_maxrate.GetFloat() * gpGlobals->frametime;
+        if (maxStep >= angle)
+        {
+            wallNormal = targetWallNormal;
+        }
+        else
+        {
+            const float t = maxStep / angle;
+            const float sinAngle = sinf(angle);
+            const float fromScale = sinf((1.0f - t) * angle) / sinAngle;
+            const float toScale = sinf(t * angle) / sinAngle;
+            wallNormal = wallNormal * fromScale + targetWallNormal * toScale;
+            wallNormal.NormalizeInPlace();
+        }
+    }
+
+    m_pPlayer->m_vecWallNormal = wallNormal;
+    m_pPlayer->m_vecLastWallNormal = wallNormal;
+}
+
+int CMomentumGameMovement::WallrunStepMove(const Vector &stepDir, Vector &vecDestination, trace_t &trace)
+{
+    Vector vecEndPos = vecDestination;
+    Vector vecPos = mv->GetAbsOrigin();
+    Vector vecVel = mv->m_vecVelocity;
+
+    // Try moving directly
+    int blocked = TryPlayerMove(&vecEndPos, &trace);
+
+    Vector vecDownPos = mv->GetAbsOrigin();
+    Vector vecDownVel = mv->m_vecVelocity;
+
+    // Try stepping out from the wall
+    mv->SetAbsOrigin(vecPos);
+    mv->m_vecVelocity = vecVel;
+
+    const float stepSize = player->GetStepSize() + DIST_EPSILON;
+    Vector vecStepPos = vecPos + stepDir * stepSize;
+    TracePlayerBBox(vecPos, vecStepPos, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, trace);
+    if (!trace.startsolid && !trace.allsolid)
+    {
+        mv->SetAbsOrigin(trace.endpos);
+    }
+
+    // Move while stepped out
+    blocked |= TryPlayerMove();
+
+    // Step back toward the wall.
+    const Vector backStart = mv->GetAbsOrigin();
+    Vector vecBackPos = backStart - stepDir * stepSize;
+    TracePlayerBBox(backStart, vecBackPos, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, trace);
+    if (trace.fraction == 1.0f || trace.startsolid || trace.allsolid)
+    {
+        mv->SetAbsOrigin(vecDownPos);
+        mv->m_vecVelocity = vecDownVel;
+        return blocked;
+    }
+
+    const float minWallDot = 1.0f;
+    const Vector stepPos = trace.endpos;
+    const float dot = trace.plane.normal.Dot(stepDir);
+    if (dot <= 0.0f)
+    {
+        mv->SetAbsOrigin(vecDownPos);
+        mv->m_vecVelocity = vecDownVel;
+        return blocked;
+    }
+    if (dot < minWallDot)
+    {
+        const float frac = clamp(dot / minWallDot, 0.0f, 1.0f);
+        mv->SetAbsOrigin(vecDownPos + (stepPos - vecDownPos) * frac * frac * frac);
+    }
+    else
+    {
+        mv->SetAbsOrigin(stepPos);
+    }
+
+    Vector vecUpPos = mv->GetAbsOrigin();
+
+    Vector deltaDown = vecDownPos - vecPos;
+    deltaDown -= stepDir * stepDir.Dot(deltaDown);
+    Vector deltaUp = vecUpPos - vecPos;
+    deltaUp -= stepDir * stepDir.Dot(deltaUp);
+
+    // Keep the result that moved farther along the wall plane
+    if (deltaDown.LengthSqr() > deltaUp.LengthSqr())
+    {
+        mv->SetAbsOrigin(vecDownPos);
+        mv->m_vecVelocity = vecDownVel;
+    }
+
+    return blocked;
+}
+
 // Handle wallrun movement and friction
 void CMomentumGameMovement::WallrunMove()
 {
@@ -3556,27 +3679,24 @@ void CMomentumGameMovement::WallrunMove()
 
     // Crude and temporary input system
     Vector wishdir = m_vecForward * mv->m_flForwardMove + m_vecRight * mv->m_flSideMove;
-    const float inputMag = wishdir.NormalizeInPlace();
-    const float inputFrac = (inputMag > 0.0f && mv->m_flClientMaxSpeed > 0.0f)
-        ? min(1.0f, inputMag / mv->m_flClientMaxSpeed)
-        : 0.0f;
+    wishdir.NormalizeInPlace();
 
     Vector horzWishDir = wishdir;
     horzWishDir.z = 0.0f;
     if (horzWishDir.NormalizeInPlace() > 0.0f)
     {
-        const float horzWishSpeed = inputFrac * sv_pk_wallrun_maxspeed_horizontal.GetFloat();
+        const float horzWishSpeed = sv_pk_wallrun_maxspeed_horizontal.GetFloat();
         Accelerate(horzWishDir, horzWishSpeed, sv_pk_wallrun_accel_horizontal.GetFloat());
     }
 
-    const float vertWishSpeed = inputFrac * fabsf(wishdir.z) * sv_pk_wallrun_maxspeed_vertical.GetFloat();
+    const float vertWishSpeed = fabsf(wishdir.z) * sv_pk_wallrun_maxspeed_vertical.GetFloat();
     if (vertWishSpeed > 0.0f)
     {
         Vector vertWishDir(0.0f, 0.0f, wishdir.z > 0.0f ? 1.0f : -1.0f);
         Accelerate(vertWishDir, vertWishSpeed, sv_pk_wallrun_accel_vertical.GetFloat());
     }
 
-    Vector wallNormal = m_pPlayer->m_vecWallNormal.Get();
+    Vector wallNormal = m_pPlayer->m_vecWallNormal;
 
     // Check if we're pushing away from the wall
     if (horzWishDir.Dot(wallNormal) <= 0.707f)
@@ -3591,12 +3711,22 @@ void CMomentumGameMovement::WallrunMove()
     // Clip velocity to stay on the current wall plane
     ClipVelocity(mv->m_vecVelocity, wallNormal, mv->m_vecVelocity, 1.0f);
 
-    int blocked = TryPlayerMove();
+    // See if we can move directly
+    Vector dest = mv->GetAbsOrigin() + mv->m_vecVelocity * gpGlobals->frametime;
+    trace_t pm;
+    TracePlayerBBox(mv->GetAbsOrigin(), dest, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+    if (pm.fraction == 1.0f)
+    {
+        mv->SetAbsOrigin(pm.endpos);
+        StayOnWall();
+        return;
+    }
+
+    int blocked = WallrunStepMove(wallNormal, dest, pm);
+    StayOnWall();
 
     if (blocked & 1) // floor
-    {
         EndWallRun();
-    }
 }
 
 // Handle end of wallrun - set vars, stop sound

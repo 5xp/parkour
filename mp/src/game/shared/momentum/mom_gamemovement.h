@@ -126,6 +126,9 @@ private:
     bool IsWallEligibleForWallrun(const Vector &wallPosition, const Vector &wallNormal, bool &outWeak);
     float GetWallrunGravityScale();
     void PredictWallrun();
+    void UpdateWallNormal();
+    void StayOnWall();
+    int WallrunStepMove(const Vector &stepDir, Vector &vecDestination, trace_t &trace);
 
     bool m_bCheckForGrabbableLadder;
 };
