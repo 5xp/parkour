@@ -3546,7 +3546,8 @@ void CMomentumGameMovement::StayOnWall()
     {
         mv->SetAbsOrigin(tr.endpos);
     }
-    else if (!CanFeetReachWall(mv->GetAbsOrigin(), m_pPlayer->m_vecWallNormal))
+
+    if (!CanFeetReachWall(mv->GetAbsOrigin(), m_pPlayer->m_vecWallNormal))
     {
         FallAwayFromWall(true);
     }
