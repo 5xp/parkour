@@ -3739,7 +3739,9 @@ void CMomentumGameMovement::WallrunMove()
     }
 
     // Check if we're pushing away from the wall
-    if (horzWishDir.Dot(wallNormal) <= 0.707f)
+    Vector rawWishDir = m_vecForward * mv->m_flForwardMove + m_vecRight * mv->m_flSideMove;
+    rawWishDir.z = 0.0f;
+    if (rawWishDir.Normalized().Dot(wallNormal) <= 0.707f)
     {
         m_pPlayer->m_flWallrunPushAwayTime = 0.0f;
     }
