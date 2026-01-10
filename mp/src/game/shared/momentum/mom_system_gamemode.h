@@ -185,7 +185,6 @@ public:
 #define PK_CROUCH_SPEED     80.0f
 #define PK_NORM_SPEED       162.5f
 #define PK_SPRINT_SPEED     243.0f
-#define PK_WALLRUN_OUT_TIME 0.5f // start easing out of the wallrun for last 0.5s
 
 class CGameMode_Parkour : public CGameModeBase
 {
@@ -195,7 +194,7 @@ public:
     const char *GetDiscordIcon() override { return "mom_icon_parkour"; }
     const char *GetMapPrefix() override { return "pk_"; }
     const char *GetGameModeCfg() override { return "pk.cfg"; }
-    float GetIntervalPerTick() override { return 0.0078125f; }
+    float GetIntervalPerTick() override { return 0.007812f; }
     void SetGameModeVars() override;
     void OnPlayerSpawn(CMomentumPlayer *pPlayer) override;
     bool WeaponIsAllowed(WeaponID_t weapon) override;

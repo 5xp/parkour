@@ -31,6 +31,8 @@ CMomentumReplaySystem::CMomentumReplaySystem(const char* pName) : CAutoGameSyste
     m_bTeleportedThisFrame(false)
 {
     m_szMapHash[0] = '\0';
+    m_vecReplaySlideTilt.Init();
+    m_vecReplayWallrunTilt.Init();
 }
 
 CMomentumReplaySystem::~CMomentumReplaySystem()
@@ -85,6 +87,8 @@ void CMomentumReplaySystem::BeginRecording()
     m_bRecording = true;
     m_iStartRecordingTick = gpGlobals->tickcount;
     m_pRecordingReplay = g_ReplayFactory.CreateEmptyReplay(0);
+    m_vecReplaySlideTilt.Init();
+    m_vecReplayWallrunTilt.Init();
 }
 
 void CMomentumReplaySystem::CancelRecording()
@@ -243,15 +247,25 @@ void CMomentumReplaySystem::UpdateRecordingParams()
         const auto pPlayer = CMomentumPlayer::GetLocalPlayer();
         if (!pPlayer->m_bHasPracticeMode && pPlayer->GetObserverMode() == OBS_MODE_NONE)
         {
-            m_pRecordingReplay->AddFrame(CReplayFrame(pPlayer->EyeAngles(), pPlayer->GetAbsOrigin(), pPlayer->GetViewOffset().z,
-                                             pPlayer->m_nButtons, m_bTeleportedThisFrame));
+            const QAngle viewPunch = pPlayer->GetPunchAngle();
+            const QAngle eyeAngles = pPlayer->EyeAngles();
+            float viewRoll = 0.0f;
+            viewRoll += pPlayer->CalcSlideViewRoll(eyeAngles, pPlayer->GetAbsVelocity(), pPlayer->m_bIsPowerSliding,
+                                                   m_vecReplaySlideTilt);
+            viewRoll += pPlayer->CalcWallrunViewRoll(eyeAngles, pPlayer->m_bIsWallrunning, pPlayer->m_flWallrunStartTime,
+                                                     pPlayer->m_vecWallNormal, m_vecReplayWallrunTilt);
+            m_pRecordingReplay->AddFrame(CReplayFrame(eyeAngles, pPlayer->GetAbsOrigin(), pPlayer->GetViewOffset().z,
+                                                     viewPunch, viewRoll, pPlayer->m_nButtons, m_bTeleportedThisFrame));
             m_bTeleportedThisFrame = false;
         }
         else
         {
             // MOM_TODO just repeat the last frame created (part of the mega refactor)
             SavedState_t *pSaved = pPlayer->GetSavedRunState();
-            m_pRecordingReplay->AddFrame(CReplayFrame(pSaved->m_angLastAng, pSaved->m_vecLastPos, pSaved->m_fLastViewOffset, pSaved->m_nButtons, false));
+            m_vecReplaySlideTilt.Init();
+            m_vecReplayWallrunTilt.Init();
+            m_pRecordingReplay->AddFrame(CReplayFrame(pSaved->m_angLastAng, pSaved->m_vecLastPos, pSaved->m_fLastViewOffset,
+                                                     vec3_angle, 0.0f, pSaved->m_nButtons, false));
         }
     }
 

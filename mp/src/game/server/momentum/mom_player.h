@@ -291,6 +291,9 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     virtual void StopPowerSlideSound();
     virtual void PlayWallRunSound(const Vector &vecOrigin);
     virtual void StopWallRunSound();
+    float CalcSlideViewRoll(const QAngle &eyeAngles, const Vector &velocity, bool isPowerSliding, Vector &tiltVec) const;
+    float CalcWallrunViewRoll(const QAngle &eyeAngles, bool isWallrunning, float wallrunStartTime, const Vector &wallNormal,
+                              Vector &tiltVec) const;
 
     bool m_bStickySprint;
     float m_flStickySprintExpire;

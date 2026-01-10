@@ -41,6 +41,7 @@ public:
 
     // Overridden for ghost spectating
     Vector GetChaseCamViewOffset(CBaseEntity *target) OVERRIDE;
+    void CalcInEyeCamView(Vector &eyeOrigin, QAngle &eyeAngles, float &fov) override;
 
     void OnObserverTargetUpdated() OVERRIDE;
 
@@ -99,6 +100,9 @@ public:
     // Parkour view tilt / fov scaling
     virtual float GetFOV(void) override;
     virtual void CalcViewRoll(QAngle &eyeAngles) override;
+    float CalcSlideViewRoll(const QAngle &eyeAngles, const Vector &velocity, bool isPowerSliding, Vector &tiltVec) const;
+    float CalcWallrunViewRoll(const QAngle &eyeAngles, bool isWallrunning, float wallrunStartTime, const Vector &wallNormal,
+                              Vector &tiltVec) const;
     
     // Mobility sound functions
     void PlayStepSound(const Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force) override;

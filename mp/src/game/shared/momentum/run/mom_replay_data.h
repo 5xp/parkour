@@ -13,7 +13,8 @@ class CReplayFrame : public ISerializable
 {
   public:
     CReplayFrame()
-        : m_angEyeAngles(0, 0, 0), m_vPlayerOrigin(0, 0, 0), m_fPlayerViewOffset(0.0f), m_iPlayerButtons(0)
+        : m_angEyeAngles(0, 0, 0), m_vPlayerOrigin(0, 0, 0), m_fPlayerViewOffset(0.0f), m_iPlayerButtons(0),
+          m_angViewPunch(0, 0, 0), m_fViewRoll(0.0f)
     {
     }
 
@@ -29,11 +30,19 @@ class CReplayFrame : public ISerializable
 
         m_fPlayerViewOffset = reader.GetFloat();
 
+        m_angViewPunch.x = reader.GetFloat();
+        m_angViewPunch.y = reader.GetFloat();
+        m_angViewPunch.z = reader.GetFloat();
+
+        m_fViewRoll = reader.GetFloat();
+
         m_iPlayerButtons = reader.GetInt();
     }
 
-    CReplayFrame(const QAngle &eye, const Vector &origin, const float viewoffset, int buttons, bool teleported)
-        : m_angEyeAngles(eye), m_vPlayerOrigin(origin), m_fPlayerViewOffset(viewoffset), m_iPlayerButtons(buttons)
+    CReplayFrame(const QAngle &eye, const Vector &origin, const float viewoffset, const QAngle &viewPunch,
+                 const float viewRoll, int buttons, bool teleported)
+        : m_angEyeAngles(eye), m_vPlayerOrigin(origin), m_fPlayerViewOffset(viewoffset), m_iPlayerButtons(buttons),
+          m_angViewPunch(viewPunch), m_fViewRoll(viewRoll)
     {
         if ( teleported )
             m_iPlayerButtons |= IN_REPLAY_TELEPORTED;
@@ -52,6 +61,12 @@ class CReplayFrame : public ISerializable
 
         writer.PutFloat(m_fPlayerViewOffset);
 
+        writer.PutFloat(m_angViewPunch.x);
+        writer.PutFloat(m_angViewPunch.y);
+        writer.PutFloat(m_angViewPunch.z);
+
+        writer.PutFloat(m_fViewRoll);
+
         writer.PutInt(m_iPlayerButtons);
     }
 
@@ -59,6 +74,8 @@ class CReplayFrame : public ISerializable
     inline QAngle EyeAngles() const { return m_angEyeAngles; }
     inline Vector PlayerOrigin() const { return m_vPlayerOrigin; }
     inline float PlayerViewOffset() const { return m_fPlayerViewOffset; }
+    inline QAngle ViewPunch() const { return m_angViewPunch; }
+    inline float ViewRoll() const { return m_fViewRoll; }
     inline int PlayerButtons() const { return m_iPlayerButtons; }
     inline bool Teleported() const { return (m_iPlayerButtons & IN_REPLAY_TELEPORTED) ? true : false; }
 
@@ -67,6 +84,8 @@ class CReplayFrame : public ISerializable
     Vector m_vPlayerOrigin;
     float m_fPlayerViewOffset;
     int m_iPlayerButtons;
+    QAngle m_angViewPunch;
+    float m_fViewRoll;
 };
 
 class CReplayHeader : public ISerializable

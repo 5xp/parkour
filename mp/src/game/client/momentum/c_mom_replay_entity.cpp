@@ -7,6 +7,8 @@ IMPLEMENT_CLIENTCLASS_DT(C_MomentumReplayGhostEntity, DT_MOM_ReplayEnt, CMomentu
 RecvPropBool(RECVINFO(m_bIsPaused)),
 RecvPropInt(RECVINFO(m_iCurrentTick)),
 RecvPropInt(RECVINFO(m_iTotalTicks), SPROP_UNSIGNED),
+RecvPropQAngles(RECVINFO(m_angViewPunch)),
+RecvPropFloat(RECVINFO(m_flViewRoll)),
 END_RECV_TABLE();
 
 C_MomentumReplayGhostEntity::C_MomentumReplayGhostEntity()
@@ -14,6 +16,8 @@ C_MomentumReplayGhostEntity::C_MomentumReplayGhostEntity()
     m_bIsPaused = false;
     m_iCurrentTick = 0;
     m_iTotalTicks = 0;
+    m_angViewPunch.Init();
+    m_flViewRoll = 0.0f;
     m_RunStats.Init();
 }
 

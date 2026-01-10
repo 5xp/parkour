@@ -23,6 +23,8 @@ IMPLEMENT_SERVERCLASS_ST(CMomentumReplayGhostEntity, DT_MOM_ReplayEnt)
 SendPropBool(SENDINFO(m_bIsPaused)),
 SendPropInt(SENDINFO(m_iCurrentTick)),
 SendPropInt(SENDINFO(m_iTotalTicks), -1, SPROP_UNSIGNED),
+SendPropQAngles(SENDINFO(m_angViewPunch), 13),
+SendPropFloat(SENDINFO(m_flViewRoll)),
 END_SEND_TABLE();
 
 BEGIN_DATADESC(CMomentumReplayGhostEntity)
@@ -37,6 +39,8 @@ CMomentumReplayGhostEntity::CMomentumReplayGhostEntity()
     m_bIsPaused = false;
     m_iCurrentTick = 0;
     m_iTotalTicks = 0;
+    m_angViewPunch.Init();
+    m_flViewRoll = 0.0f;
     m_pCurrentSpecPlayer = nullptr;
     ListenForGameEvent("mapfinished_panel_closed");
 }
@@ -406,6 +410,8 @@ void CMomentumReplayGhostEntity::HandleGhostFirstPerson()
 
         // networked var that allows the replay to control keypress display on the client
         m_nGhostButtons = currentStep->PlayerButtons();
+        m_angViewPunch = currentStep->ViewPunch();
+        m_flViewRoll = currentStep->ViewRoll();
 
         if (m_Data.m_iTimerState == TIMER_STATE_RUNNING)
             UpdateStats(interpolatedVel);
@@ -466,6 +472,8 @@ void CMomentumReplayGhostEntity::HandleGhost()
     SetAbsAngles(QAngle(currentStep->EyeAngles().x /
                         GHOST_PITCH_REDUCTION_VALUE, // we divide x angle (pitch) by 10 so the ghost doesn't look really stupid
                         currentStep->EyeAngles().y, currentStep->EyeAngles().z));
+    m_angViewPunch = currentStep->ViewPunch();
+    m_flViewRoll = currentStep->ViewRoll();
 
     // remove the nodraw effects
     UnHideGhost();

@@ -49,6 +49,8 @@ class CMomentumReplayGhostEntity : public CMomentumGhostBaseEntity, public CGame
     CNetworkVar(bool, m_bIsPaused); // Is the replay paused?
     CNetworkVar(int, m_iCurrentTick); // Current tick of the replay
     CNetworkVar(int, m_iTotalTicks); // Total ticks for the replay (run time + start + end)
+    CNetworkQAngle(m_angViewPunch);
+    CNetworkVar(float, m_flViewRoll);
 
     // override of color so that replayghosts are always somewhat transparent.
     void AppearanceModelColorChanged(const AppearanceData_t &newApp) override;

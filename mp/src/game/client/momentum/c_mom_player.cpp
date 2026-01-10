@@ -4,6 +4,7 @@
 #include <steam/isteamuser.h>
 
 #include "c_mom_online_ghost.h"
+#include "c_mom_replay_entity.h"
 
 #include "tier0/memdbgon.h"
 #include "movevars_shared.h"
@@ -204,6 +205,65 @@ Vector C_MomentumPlayer::GetChaseCamViewOffset(C_BaseEntity* target)
     return BaseClass::GetChaseCamViewOffset(target);
 }
 
+void C_MomentumPlayer::CalcInEyeCamView(Vector& eyeOrigin, QAngle& eyeAngles, float& fov)
+{
+    C_BaseEntity *target = GetObserverTarget();
+
+    if (!target)
+    {
+        VectorCopy(EyePosition(), eyeOrigin);
+        VectorCopy(EyeAngles(), eyeAngles);
+        return;
+    }
+
+    if (!target->IsAlive())
+    {
+        CalcChaseCamView(eyeOrigin, eyeAngles, fov);
+        return;
+    }
+
+    fov = GetFOV();
+
+    m_flObserverChaseDistance = 0.0f;
+
+    eyeAngles = target->EyeAngles();
+    eyeOrigin = target->GetAbsOrigin();
+
+    const auto pReplayGhost = dynamic_cast<C_MomentumReplayGhostEntity*>(target);
+    if (pReplayGhost && pReplayGhost->IsReplayGhost())
+    {
+        VectorAdd(eyeAngles, pReplayGhost->m_angViewPunch, eyeAngles);
+        eyeAngles[ROLL] += pReplayGhost->m_flViewRoll;
+    }
+    else
+    {
+        VectorAdd(eyeAngles, GetPunchAngle(), eyeAngles);
+    }
+
+    if (engine->IsHLTV())
+    {
+        C_BaseAnimating *pTargetAnimating = target->GetBaseAnimating();
+        if (target->GetFlags() & FL_DUCKING)
+        {
+            eyeOrigin += pTargetAnimating ? VEC_DUCK_VIEW_SCALED(pTargetAnimating) : VEC_DUCK_VIEW;
+        }
+        else
+        {
+            eyeOrigin += pTargetAnimating ? VEC_VIEW_SCALED(pTargetAnimating) : VEC_VIEW;
+        }
+    }
+    else
+    {
+        Vector offset = GetViewOffset();
+#ifdef HL2MP
+        offset = target->GetViewOffset();
+#endif
+        eyeOrigin += offset;
+    }
+
+    engine->SetViewAngles(eyeAngles);
+}
+
 void C_MomentumPlayer::OnObserverTargetUpdated()
 {
     m_pSpecTarget = nullptr; // Hard-set to null upon observer change
@@ -244,71 +304,14 @@ void C_MomentumPlayer::CalcViewRoll(QAngle &eyeAngles)
 
 void C_MomentumPlayer::ApplySlideViewTilt(QAngle &eyeAngles)
 {
-    Vector velocity = GetAbsVelocity();
-    velocity.z = 0.0f;
-
-    float speed = velocity.Length();
-
-    // more speed -> more tilt
-    float speedFrac = RemapValClamped(speed, sv_pk_slide_stop_speed.GetFloat(), sv_pk_slide_viewtilt_player_speed.GetFloat(), 0.0f, 1.0f);
-    Vector targetTiltVec = m_bIsPowerSliding ? velocity.Normalized() * speedFrac : vec3_origin;
-
-    Vector forward, right, up;
-    AngleVectors(eyeAngles, &forward, &right, &up);
-    Vector left = -right;
-
-    // looking more to the side -> more tilt
-    float angleFrac = DotProduct(m_Local.m_vecSlideTilt, left);
-
-    float approachSpeed = m_bIsPowerSliding && m_Local.m_vecSlideTilt.LengthSqr() < targetTiltVec.LengthSqr()
-        ? sv_pk_slide_viewtilt_increase_speed.GetFloat()
-        : sv_pk_slide_viewtilt_decrease_speed.GetFloat();
-
-    Vector delta = targetTiltVec - m_Local.m_vecSlideTilt;
-    float len = delta.Length();
-    float maxStep = approachSpeed * gpGlobals->frametime;
-    if (!delta.IsZero() && len > maxStep)
-        delta *= maxStep / len;
-    m_Local.m_vecSlideTilt += delta;
-
-    float totalRoll = angleFrac * sv_pk_slide_viewtilt_side.GetFloat();
-
+    const float totalRoll = CalcSlideViewRoll(eyeAngles, GetAbsVelocity(), m_bIsPowerSliding, m_Local.m_vecSlideTilt);
     eyeAngles[ROLL] += totalRoll;
 }
 
 void C_MomentumPlayer::ApplyWallrunViewTilt(QAngle &eyeAngles)
 {
-    Vector forward;
-    AngleVectors(eyeAngles, &forward);
-
-    const float wallrunTime = gpGlobals->curtime - m_flWallrunStartTime;
-    const float wallrunTimeLimit = sv_pk_wallrun_timelimit.GetFloat();
-    const bool wallrunEndingSoon = m_bIsWallrunning && wallrunTime > wallrunTimeLimit - PK_WALLRUN_OUT_TIME;
-
-    // convert angular speed to linear speed
-    float tiltSpeed = sv_pk_wallrun_viewtilt_speed.GetFloat() / (M_PI_F * 0.5f); 
-
-    if (wallrunEndingSoon)
-        tiltSpeed = 1.0f / PK_WALLRUN_OUT_TIME;
-
-    Vector approachTo = wallrunEndingSoon ? vec3_origin : m_vecWallNormal;
-    Vector delta = approachTo - m_vecWallrunTilt;
-    const float deltaLen = delta.Length();
-    const float maxStep = tiltSpeed * gpGlobals->frametime;
-    if (deltaLen > maxStep && maxStep > 0.0f)
-    {
-        delta *= maxStep / deltaLen;
-    }
-    m_vecWallrunTilt += delta;
-
-    Vector tiltNormal = m_vecWallrunTilt;
-    const float tiltLen = tiltNormal.NormalizeInPlace();
-    const float eased = sinf(clamp(tiltLen, 0.0f, 1.0f) * M_PI_F * 0.5f);
-    const float tilt = Lerp(eased, 0.0f, sv_pk_wallrun_viewtilt_max.GetFloat());
-
-    Vector cross;
-    CrossProduct(forward, tiltNormal, cross);
-    const float wallrunRoll = -tilt * cross.z;
+    const float wallrunRoll = CalcWallrunViewRoll(eyeAngles, m_bIsWallrunning, m_flWallrunStartTime, m_vecWallNormal,
+                                                  m_vecWallrunTilt);
     eyeAngles[ROLL] += wallrunRoll;
 }
 

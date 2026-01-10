@@ -1,6 +1,7 @@
 #include "cbase.h"
 
 #include "mom_player_shared.h"
+#include "movevars_shared.h"
 
 #include "effect_dispatch_data.h"
 #ifdef GAME_DLL
@@ -546,4 +547,81 @@ void CMomentumPlayer::PlayWallRunSound(const Vector &vecOrigin)
 void CMomentumPlayer::StopWallRunSound(void)
 {
     StopSound("Player.WallRun", m_hssWallRunSound);
+}
+
+float CMomentumPlayer::CalcSlideViewRoll(const QAngle &eyeAngles, const Vector &velocity, bool isPowerSliding,
+                                         Vector &tiltVec) const
+{
+    Vector planarVel = velocity;
+    planarVel.z = 0.0f;
+
+    const float speed = planarVel.Length();
+
+    // more speed -> more tilt
+    const float speedFrac = RemapValClamped(speed, sv_pk_slide_stop_speed.GetFloat(),
+                                            sv_pk_slide_viewtilt_player_speed.GetFloat(), 0.0f, 1.0f);
+
+    Vector targetTiltVec = vec3_origin;
+    if (isPowerSliding && speed > 0.0f)
+    {
+        targetTiltVec = planarVel * (speedFrac / speed);
+    }
+
+    Vector right;
+    AngleVectors(eyeAngles, nullptr, &right, nullptr);
+    Vector left = -right;
+
+    // looking more to the side -> more tilt
+    const float angleFrac = DotProduct(tiltVec, left);
+
+    const float approachSpeed = isPowerSliding && tiltVec.LengthSqr() < targetTiltVec.LengthSqr()
+        ? sv_pk_slide_viewtilt_increase_speed.GetFloat()
+        : sv_pk_slide_viewtilt_decrease_speed.GetFloat();
+
+    Vector delta = targetTiltVec - tiltVec;
+    const float len = delta.Length();
+    const float maxStep = approachSpeed * gpGlobals->frametime;
+    if (len > maxStep && maxStep > 0.0f)
+    {
+        delta *= maxStep / len;
+    }
+    tiltVec += delta;
+
+    return angleFrac * sv_pk_slide_viewtilt_side.GetFloat();
+}
+
+float CMomentumPlayer::CalcWallrunViewRoll(const QAngle &eyeAngles, bool isWallrunning, float wallrunStartTime,
+                                           const Vector &wallNormal, Vector &tiltVec) const
+{
+    Vector forward;
+    AngleVectors(eyeAngles, &forward, nullptr, nullptr);
+
+    const float wallrunTime = gpGlobals->curtime - wallrunStartTime;
+    const float wallrunTimeLimit = sv_pk_wallrun_timelimit.GetFloat();
+    const float wallrunOutTime = sv_pk_wallrun_out_time.GetFloat();
+    const bool wallrunEndingSoon = isWallrunning && wallrunTime > wallrunTimeLimit - wallrunOutTime;
+
+    // convert angular speed to linear speed
+    float tiltSpeed = sv_pk_wallrun_viewtilt_speed.GetFloat() / (M_PI_F * 0.5f);
+    if (wallrunEndingSoon && wallrunOutTime > 0.0f)
+        tiltSpeed = 1.0f / wallrunOutTime;
+
+    const Vector approachTo = wallrunEndingSoon ? vec3_origin : wallNormal;
+    Vector delta = approachTo - tiltVec;
+    const float deltaLen = delta.Length();
+    const float maxStep = tiltSpeed * gpGlobals->frametime;
+    if (deltaLen > maxStep && maxStep > 0.0f)
+    {
+        delta *= maxStep / deltaLen;
+    }
+    tiltVec += delta;
+
+    Vector tiltNormal = tiltVec;
+    const float tiltLen = tiltNormal.NormalizeInPlace();
+    const float eased = sinf(clamp(tiltLen, 0.0f, 1.0f) * M_PI_F * 0.5f);
+    const float tilt = Lerp(eased, 0.0f, sv_pk_wallrun_viewtilt_max.GetFloat());
+
+    Vector cross;
+    CrossProduct(forward, tiltNormal, cross);
+    return -tilt * cross.z;
 }

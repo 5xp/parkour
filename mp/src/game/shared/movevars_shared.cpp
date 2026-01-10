@@ -344,6 +344,12 @@ sv_pk_wallrun_timelimit(
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Wallrun max duration.");
 ConVar
+sv_pk_wallrun_out_time(
+	"sv_pk_wallrun_out_time",
+	"0.5",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Start easing out of the wallrun for the last N seconds.");
+ConVar
 sv_pk_wallrun_upwallboost(
 	"sv_pk_wallrun_upwallboost",
 	"250",

@@ -53,6 +53,7 @@ extern ConVar sv_pk_wallrun_jump_upspeed;
 extern ConVar sv_pk_wallrun_jump_outwardspeed;
 extern ConVar sv_pk_wallrun_jump_inputdirspeed;
 extern ConVar sv_pk_wallrun_timelimit;
+extern ConVar sv_pk_wallrun_out_time;
 extern ConVar sv_pk_wallrun_upwallboost;
 extern ConVar sv_pk_wallrun_friction;
 extern ConVar sv_pk_wallrun_maxspeed_horizontal;

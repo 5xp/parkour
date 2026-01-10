@@ -65,6 +65,8 @@ public:
     // Map SHA1 hash for version purposes
     char m_szMapHash[41];
     bool m_bTeleportedThisFrame;
+    Vector m_vecReplaySlideTilt;
+    Vector m_vecReplayWallrunTilt;
 };
 
 extern CMomentumReplaySystem g_ReplaySystem;
