@@ -3701,8 +3701,13 @@ void CMomentumGameMovement::WallrunMove()
         wallForward.NormalizeInPlace();
         wishVel = wallForward * mv->m_flRawForwardMove;
 
+        if (mv->m_flRawForwardMove > 0.0f)
+        {
+            wishVel.z += fabsf(mv->m_flRawForwardMove) * sv_pk_wallrun_upwardautopush.GetFloat();
+        }
+
         // Remap sideways into-wall input as up relative to player, and ignore away input
-        bool bPushingIntoWall = DotProduct(m_vecRight * mv->m_flRawSideMove, wallNormal) < 0.0f;
+        const bool bPushingIntoWall = DotProduct(m_vecRight * mv->m_flRawSideMove, wallNormal) < 0.0f;
         if (bPushingIntoWall)
         {
             wishVel += m_vecUp * fabsf(mv->m_flRawSideMove);
@@ -3711,7 +3716,6 @@ void CMomentumGameMovement::WallrunMove()
 
     Vector wishDir = wishVel;
     const float wishSpeed = wishDir.NormalizeInPlace();
-
 
     const float horzInput = Vector(wishVel.x, wishVel.y, 0.0f).Length();
     const float vertInput = fabsf(wishVel.z);
