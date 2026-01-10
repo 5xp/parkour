@@ -121,6 +121,9 @@ private:
     float m_flLastSlideBoost;
     float m_flFOVScaleFrac;
 
+    int m_iAirJumps;
+    bool CanAirJump() const { return m_iAirJumps > 0; }
+
     CNetworkVar(bool, m_bIsWallrunning);
     CNetworkVar(float, m_flWallrunStartTime);
     float m_flWallrunFallAwayTime;
@@ -133,14 +136,7 @@ private:
     Vector m_vecTargetWallNormal;
     Vector m_vecLastWallNormal;
     Vector m_vecLastWallrunStartPos;
-
-    AirJumpState m_nAirJumpState; // Is the airjump ready, in progress, or done?
-    // Is the player allowed to jump while in the air
-    bool CanAirJump() const
-    {
-        return m_nAirJumpState != AIRJUMP_DONE &&
-            m_nAirJumpState != AIRJUMP_NORM_JUMPING;
-    }
+    
     HSOUNDSCRIPTHANDLE m_hssPowerSlideSound;
     HSOUNDSCRIPTHANDLE m_hssWallRunSound;
 

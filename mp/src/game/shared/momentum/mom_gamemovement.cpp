@@ -1338,8 +1338,10 @@ bool CMomentumGameMovement::CheckJumpButton()
     const bool bJustJumped = ((mv->m_nButtons & IN_JUMP) && !(mv->m_nOldButtons & IN_JUMP));
 
     const bool bCoyoteJump = (gpGlobals->curtime <= m_pPlayer->m_flCoyoteTime);
+    const bool bInAir = (player->GetGroundEntity() == nullptr);
+    bool bDoAirJump = false;
 
-    if (player->GetGroundEntity() == nullptr)
+    if (bInAir)
     {
         if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
         {
@@ -1369,20 +1371,24 @@ bool CMomentumGameMovement::CheckJumpButton()
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR) && m_pPlayer->m_bIsWallrunning && !bJustJumped)
         return false;
 
-    if (mv->m_nOldButtons & IN_JUMP)
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
     {
-        if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR) && m_pPlayer->CanAirJump())
+        if (bInAir && !bCoyoteJump)
         {
-            if (bCoyoteJump)
+            if (bJustJumped && !m_pPlayer->m_bIsWallrunning && m_pPlayer->CanAirJump())
             {
-                m_pPlayer->m_nAirJumpState = AIRJUMP_NORM_JUMPING; // pretend they hit the button in time
+                bDoAirJump = true;
             }
-            else
+            else if (!m_pPlayer->m_bIsWallrunning)
             {
-                m_pPlayer->m_nAirJumpState = AIRJUMP_NOW;
+                return false;
             }
         }
-        else if (!m_pPlayer->HasAutoBhop() && !m_pPlayer->m_bIsWallrunning)
+    }
+
+    if (mv->m_nOldButtons & IN_JUMP)
+    {
+        if (!bDoAirJump && !m_pPlayer->HasAutoBhop() && !m_pPlayer->m_bIsWallrunning)
         {
             return false; // don't pogo stick
         }
@@ -1409,10 +1415,9 @@ bool CMomentumGameMovement::CheckJumpButton()
     m_pPlayer->m_Data.m_flLastJumpTime = gpGlobals->curtime;
 
     // Play different sound for air jump
-    if (m_pPlayer->m_nAirJumpState == AIRJUMP_NOW)
+    if (bDoAirJump)
     {
         m_pPlayer->PlayAirjumpSound(mv->GetAbsOrigin()); // softer
-        // player->m_Local.m_vecPunchAngle.Set(PITCH, 2); // shake the view a bit
     }
     else
     {
@@ -1452,7 +1457,7 @@ bool CMomentumGameMovement::CheckJumpButton()
             EndWallRun();
             DoWallJump();
         }
-        else if (m_pPlayer->m_nAirJumpState == AIRJUMP_NOW)
+        else if (bDoAirJump)
         {
             DoAirJump();
         }
@@ -1462,8 +1467,7 @@ bool CMomentumGameMovement::CheckJumpButton()
         }
     }
     else if (!g_pGameModeSystem->IsCSBasedMode() && (player->m_Local.m_bDucking ||
-                                                player->GetFlags() & FL_DUCKING ||
-                                                m_pPlayer->m_nAirJumpState == AIRJUMP_NOW))
+                                                player->GetFlags() & FL_DUCKING))
     {
         mv->m_vecVelocity[2] = flGroundFactor * g_pGameModeSystem->GetGameMode()->GetJumpFactor();
 
@@ -1563,19 +1567,6 @@ bool CMomentumGameMovement::CheckJumpButton()
     {
         EndPowerSlide();
 
-        if (m_pPlayer->m_nAirJumpState == AIRJUMP_NOW)
-        {
-            //Msg("AIRJUMP_DONE\n");
-            m_pPlayer->m_nAirJumpState = AIRJUMP_DONE;
-        }
-        else
-        {
-            // remember we jumped normally, so we don't airjump unless 
-            // the button is pressed again
-            //Msg("NORM_JUMPING\n");
-            m_pPlayer->m_nAirJumpState = AIRJUMP_NORM_JUMPING;
-        }
-
         // coyote time ends now
         m_pPlayer->m_flCoyoteTime = 0;
         m_pPlayer->m_bWallrunHasBoost = true;
@@ -1635,6 +1626,7 @@ void CMomentumGameMovement::DoRegularJump()
 
 void CMomentumGameMovement::DoAirJump()
 {
+    m_pPlayer->m_iAirJumps--;
     m_pPlayer->m_bDoFOVScale = false;
     player->m_Local.m_vecPunchAngleVel += SampleViewPunch(ViewPunchEvent::AIRJUMP) * PK_VIEWPUNCH_SCALE;
 
@@ -2019,11 +2011,6 @@ void CMomentumGameMovement::FullWalkMove()
         else
         {
             mv->m_nOldButtons &= ~IN_JUMP;
-
-            if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR) && m_pPlayer->m_nAirJumpState == AIRJUMP_NORM_JUMPING)
-            {
-                m_pPlayer->m_nAirJumpState = AIRJUMP_READY;
-            }
         }
 
         // Friction is handled before we add in any base velocity. That way, if we are on a conveyor,
@@ -3004,6 +2991,7 @@ void CMomentumGameMovement::SetGroundEntity(const trace_t *pm)
             m_pPlayer->m_vecWallNormal.Init();
             m_pPlayer->m_vecTargetWallNormal.Init();
             m_pPlayer->m_flWallrunFallAwayTime = 0.0f;
+            m_pPlayer->m_iAirJumps = sv_pk_airjump_max.GetInt();
         }
     }
     else if (player->GetGroundEntity() && !(pm && pm->m_pEnt))
@@ -3011,14 +2999,12 @@ void CMomentumGameMovement::SetGroundEntity(const trace_t *pm)
         if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
         {
             // mobility - make sure can airjump after walking off ledge
-            if (m_pPlayer->m_nAirJumpState != AIRJUMP_NORM_JUMPING)
+            if (!(mv->m_nButtons & IN_JUMP))
             {
                 // being airborn and holding down the jump button from 
                 // a previous jump is the same as if you norm jumped
                 // (as far as airjumping is concerned)
                 // Msg("Not on ground anymore, AIRJUMP_NORM_JUMPING\n");
-                m_pPlayer->m_nAirJumpState = AIRJUMP_NORM_JUMPING;
-
                 m_pPlayer->m_flCoyoteTime = gpGlobals->curtime + sv_pk_coyote_time.GetFloat();
             }
         }
@@ -3394,6 +3380,7 @@ void CMomentumGameMovement::OnWallTouch(Vector &vecWallNormal, trace_t &pm)
     m_pPlayer->m_bIsWallrunning = true;
     m_pPlayer->m_flWallrunStartTime = gpGlobals->curtime;
     m_pPlayer->m_flWallrunFallAwayTime = 0.0f;
+    m_pPlayer->m_iAirJumps = sv_pk_airjump_max.GetInt();
     m_pPlayer->m_bWallrunWeak = isWeak;
     m_pPlayer->m_vecWallNormal = vecWallNormal;
     m_pPlayer->m_vecTargetWallNormal = vecWallNormal;
@@ -3785,7 +3772,6 @@ void CMomentumGameMovement::EndWallRun()
 
     //Msg( "End Wallrun\n" );
     //m_pPlayer->StopWallRunSound();
-    m_pPlayer->m_nAirJumpState = AIRJUMP_NORM_JUMPING;
     m_pPlayer->m_bIsWallrunning = false;
     m_pPlayer->m_flWallrunPushAwayTime = 0.0f;
 #ifdef GAME_DLL

@@ -263,6 +263,8 @@ CMomentumPlayer::CMomentumPlayer()
     m_flLastSlideBoost = 0.0f;
     m_bDoFOVScale = false;
 
+    m_iAirJumps = 0;
+
     m_bIsWallrunning = false;
     m_flWallrunStartTime = 0.0f;
     m_flWallrunFallAwayTime = 0.0f;

@@ -81,6 +81,7 @@ extern ConVar sv_pk_coyote_time;
 extern ConVar sv_pk_slide_lock;
 extern ConVar sv_pk_gravity_scale;
 extern ConVar sv_pk_jump_height;
+extern ConVar sv_pk_airjump_max;
 extern ConVar sv_pk_airjump_height;
 extern ConVar sv_pk_airjump_min_height_fraction;
 extern ConVar sv_pk_airjump_horz_speed;

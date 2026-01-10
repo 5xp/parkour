@@ -129,6 +129,12 @@ sv_pk_jump_height(
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Regular jump height");
 ConVar
+sv_pk_airjump_max(
+	"sv_pk_airjump_max",
+	"1",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Maximum number of airjumps allowed.");
+ConVar
 sv_pk_airjump_height(
 	"sv_pk_airjump_height",
 	"60",

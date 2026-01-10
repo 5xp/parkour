@@ -252,14 +252,6 @@ enum class ViewPunchEvent : int
     COUNT
 };
 
-enum AirJumpState
-{
-    AIRJUMP_READY = 1,    // Player has not airjumped yet
-    AIRJUMP_NORM_JUMPING, // Player is normal jumping
-    AIRJUMP_NOW,          // Player is airjumping right now
-    AIRJUMP_DONE          // Player has airjumped already
-};
-
 #define PANEL_REPLAY "replaycontrols"
 #define PANEL_TRICK_LIST "tricks"
 
