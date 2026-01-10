@@ -1786,7 +1786,26 @@ void CGameMovement::AirMove( void )
 	// Add in any base velocity to the current velocity.
 	VectorAdd(mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity );
 
-	TryPlayerMove();
+	if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+	{
+        // See if we can move directly
+        Vector dest = mv->GetAbsOrigin() + mv->m_vecVelocity * gpGlobals->frametime;
+        trace_t pm;
+        TracePlayerBBox(mv->GetAbsOrigin(), dest, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, pm);
+        if (pm.fraction == 1.0f)
+        {
+            mv->SetAbsOrigin(pm.endpos);
+		}
+		else
+		{
+			// Lets us step onto things we just barely hit with our feet
+            StepMove(dest, pm);
+		}
+	}
+	else
+	{
+		TryPlayerMove();
+	}
 
 	// Now pull the base velocity back out.   Base velocity is set if you are on a moving object, like a conveyor (or maybe another monster?)
 	VectorSubtract( mv->m_vecVelocity, player->GetBaseVelocity(), mv->m_vecVelocity );
