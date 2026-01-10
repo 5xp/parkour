@@ -48,6 +48,8 @@ public:
 	QAngle			m_vecAbsViewAngles;	// Command view angles (world space)
 	int				m_nButtons;			// Attack buttons.
 	int				m_nOldButtons;		// From host_client->oldbuttons;
+	float			m_flRawForwardMove;
+	float			m_flRawSideMove;
 	float			m_flForwardMove;
 	float			m_flSideMove;
 	float			m_flUpMove;

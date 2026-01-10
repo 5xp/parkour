@@ -3070,6 +3070,9 @@ void CMomentumGameMovement::CheckParameters()
         mv->m_flClientMaxSpeed = CS_WALK_SPEED;
     }
 
+    mv->m_flRawForwardMove = mv->m_flForwardMove;
+    mv->m_flRawSideMove = mv->m_flSideMove;
+
     BaseClass::CheckParameters();
 }
 
@@ -3426,9 +3429,6 @@ void CMomentumGameMovement::OnWallTouch(Vector &vecWallNormal, trace_t &pm)
 
 void CMomentumGameMovement::DoWallRunFriction(Vector &velocity, const float friction)
 {
-    if (velocity.IsLengthLessThan(0.1f))
-        return;
-
     const float speed = velocity.Length();
     const float drop = speed * friction * gpGlobals->frametime;
     const float newSpeed = max(0.0f, speed - drop);
@@ -3459,7 +3459,7 @@ void CMomentumGameMovement::PredictWallrun()
     if (m_pPlayer->m_bIsWallrunning)
         return;
 
-    m_pPlayer->m_vecWallNormal = vec3_origin;
+    m_pPlayer->m_vecWallNormal.Init();
 
     if (player->GetGroundEntity() != nullptr)
         return;
@@ -3656,6 +3656,8 @@ int CMomentumGameMovement::WallrunStepMove(const Vector &stepDir, Vector &vecDes
     return blocked;
 }
 
+ConVar pk_max_move("pk_max_move", "400.0");
+
 // Handle wallrun movement and friction
 void CMomentumGameMovement::WallrunMove()
 {
@@ -3668,6 +3670,8 @@ void CMomentumGameMovement::WallrunMove()
         // TODO: Multiply verticalFriction by slip scale based on time spent wallrunning
     }
 
+    Vector wallNormal = m_pPlayer->m_vecWallNormal;
+
     Vector horzVelocity = mv->m_vecVelocity;
     horzVelocity.z = 0.0f;
     DoWallRunFriction(horzVelocity, horizontalFriction);
@@ -3678,26 +3682,61 @@ void CMomentumGameMovement::WallrunMove()
     mv->m_vecVelocity.y = horzVelocity.y;
     mv->m_vecVelocity.z = vertVelocity.z;
 
-    // Crude and temporary input system
-    Vector wishdir = m_vecForward * mv->m_flForwardMove + m_vecRight * mv->m_flSideMove;
-    wishdir.NormalizeInPlace();
+    const float angleDiff = AngleNormalize(GetWallRunYaw());
+    const bool bIsClimbing = fabsf(angleDiff) < 45.0f || fabsf(angleDiff) > 135.0f;
+    Vector wishVel;
 
-    Vector horzWishDir = wishdir;
+    if (bIsClimbing)
+    {
+        // If we're looking within 45 degrees into or away from the wall, map forward/back to up/down
+        const float lookingIn = Sign(m_vecForward.Dot(-wallNormal));
+        Vector wallHorizontal = wallNormal.Cross(Vector(0, 0, -1.0f));
+        wishVel = lookingIn * Vector(0.0f, 0.0f, 1.0f) * mv->m_flRawForwardMove + lookingIn * wallHorizontal * mv->m_flRawSideMove;
+    }
+    else
+    {
+        // Project m_vecForward onto the wall plane to get our "forward" direction
+        const float forwardDotNormal = m_vecForward.Dot(wallNormal);
+        Vector wallForward = m_vecForward - (wallNormal * forwardDotNormal);
+        wallForward.NormalizeInPlace();
+        wishVel = wallForward * mv->m_flRawForwardMove;
+
+        // Remap sideways into-wall input as up relative to player, and ignore away input
+        bool bPushingIntoWall = DotProduct(m_vecRight * mv->m_flRawSideMove, wallNormal) < 0.0f;
+        if (bPushingIntoWall)
+        {
+            wishVel += m_vecUp * fabsf(mv->m_flRawSideMove);
+        }
+    }
+
+    Vector wishDir = wishVel;
+    const float wishSpeed = wishDir.NormalizeInPlace();
+
+
+    const float horzInput = Vector(wishVel.x, wishVel.y, 0.0f).Length();
+    const float vertInput = fabsf(wishVel.z);
+
+    const float horzInputFrac = clamp(horzInput / pk_max_move.GetFloat(), 0.0f, 1.0f);
+    const float vertInputFrac = clamp(vertInput / pk_max_move.GetFloat(), 0.0f, 1.0f);
+
+    const bool bMovingBackwards = wishDir.Dot(m_vecForward) < -0.6f;
+    const float horzMaxSpeed = bMovingBackwards ? sv_pk_wallrun_maxspeed_horizontal_backwards.GetFloat()
+                                                : sv_pk_wallrun_maxspeed_horizontal.GetFloat();
+    const float horzWishSpeed = horzInputFrac * horzMaxSpeed;
+    const float vertWishSpeed = vertInputFrac * sv_pk_wallrun_maxspeed_vertical.GetFloat();
+
+    Vector horzWishDir = wishDir;
     horzWishDir.z = 0.0f;
     if (horzWishDir.NormalizeInPlace() > 0.0f)
     {
-        const float horzWishSpeed = sv_pk_wallrun_maxspeed_horizontal.GetFloat();
         Accelerate(horzWishDir, horzWishSpeed, sv_pk_wallrun_accel_horizontal.GetFloat());
     }
 
-    const float vertWishSpeed = fabsf(wishdir.z) * sv_pk_wallrun_maxspeed_vertical.GetFloat();
-    if (vertWishSpeed > 0.0f)
+    if (vertInputFrac > 0.0f)
     {
-        Vector vertWishDir(0.0f, 0.0f, wishdir.z > 0.0f ? 1.0f : -1.0f);
+        Vector vertWishDir(0.0f, 0.0f, wishDir.z > 0.0f ? 1.0f : -1.0f);
         Accelerate(vertWishDir, vertWishSpeed, sv_pk_wallrun_accel_vertical.GetFloat());
     }
-
-    Vector wallNormal = m_pPlayer->m_vecWallNormal;
 
     // Check if we're pushing away from the wall
     if (horzWishDir.Dot(wallNormal) <= 0.707f)
@@ -3736,7 +3775,7 @@ void CMomentumGameMovement::EndWallRun()
     if (!m_pPlayer->m_bIsWallrunning)
         return;
 
-    m_pPlayer->m_vecWallNormal = vec3_origin;
+    m_pPlayer->m_vecWallNormal.Init();
 
     //Msg( "End Wallrun\n" );
     //m_pPlayer->StopWallRunSound();
