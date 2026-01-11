@@ -122,6 +122,7 @@ private:
     float m_flFOVScaleFrac;
 
     int m_iAirJumps;
+    float m_flJumpBufferTime;
     bool CanAirJump() const { return m_iAirJumps > 0; }
 
     CNetworkVar(bool, m_bIsWallrunning);

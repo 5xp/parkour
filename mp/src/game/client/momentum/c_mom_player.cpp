@@ -85,6 +85,7 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_flFOVScaleFrac = 0.0f;
 
     m_iAirJumps = 0;
+    m_flJumpBufferTime = 0.0f;
 
     m_bIsWallrunning = false;
     m_flWallrunStartTime = 0.0f;

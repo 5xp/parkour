@@ -118,6 +118,12 @@ public:
 private:
     CMomentumPlayer *m_pPlayer;
 
+    bool IsJumpBufferActive();
+    bool ShouldDoBufferedJump();
+    void StartJumpBuffer();
+    bool PredictGroundTouch(float predictTime, trace_t *outTrace = nullptr);
+    bool PredictWallTouch(float predictTime, Vector *outNormal = nullptr);
+
     void FallAwayFromWall(const bool giveCoyoteTime);
     void CheckShouldWallrunEnd();
     bool CanFeetReachWall(const Vector &position, const Vector &wallNormal);

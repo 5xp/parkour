@@ -264,6 +264,7 @@ CMomentumPlayer::CMomentumPlayer()
     m_bDoFOVScale = false;
 
     m_iAirJumps = 0;
+    m_flJumpBufferTime = 0.0f;
 
     m_bIsWallrunning = false;
     m_flWallrunStartTime = 0.0f;

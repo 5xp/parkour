@@ -1283,6 +1283,88 @@ bool CMomentumGameMovement::ShouldApplyGroundFriction()
            m_pPlayer->m_bIsWallrunning; // wall
 }
 
+bool CMomentumGameMovement::IsJumpBufferActive()
+{
+    if (sv_pk_jump_buffer_ticks.GetInt() <= 0)
+        return false;
+
+    if (m_pPlayer->m_flJumpBufferTime <= 0.0f)
+        return false;
+
+    if (gpGlobals->curtime > m_pPlayer->m_flJumpBufferTime)
+    {
+        m_pPlayer->m_flJumpBufferTime = 0.0f;
+        return false;
+    }
+
+    return true;
+}
+
+bool CMomentumGameMovement::ShouldDoBufferedJump()
+{
+    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+        return false;
+
+    if (!IsJumpBufferActive())
+        return false;
+
+    return (player->GetGroundEntity() != nullptr) || m_pPlayer->m_bIsWallrunning;
+}
+
+bool CMomentumGameMovement::PredictGroundTouch(float predictTime, trace_t *outTrace)
+{
+    if (predictTime <= 0.0f)
+        return false;
+
+    if (player->GetMoveType() == MOVETYPE_NOCLIP)
+        return false;
+
+    const Vector start = mv->GetAbsOrigin();
+    Vector end = start + mv->m_vecVelocity * predictTime;
+    const float gravity = GetCurrentGravity() * GetPlayerGravity();
+    end.z -= 0.5f * gravity * predictTime * predictTime;
+
+    trace_t tr;
+    TracePlayerBBox(start, end, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, tr);
+    if (outTrace)
+        *outTrace = tr;
+
+    return (tr.fraction < 1.0f && tr.plane.normal.z >= 0.7f);
+}
+
+bool CMomentumGameMovement::PredictWallTouch(float predictTime, Vector *outNormal)
+{
+    if (predictTime <= 0.0f)
+        return false;
+
+    if (player->GetMoveType() == MOVETYPE_NOCLIP)
+        return false;
+
+    if (player->GetGroundEntity() != nullptr)
+        return false;
+
+    const Vector start = mv->GetAbsOrigin();
+    const Vector end = start + mv->m_vecVelocity * predictTime;
+
+    trace_t tr;
+    TracePlayerBBox(start, end, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, tr);
+
+    if (tr.fraction == 1.0f)
+        return false;
+
+    if (tr.plane.normal.z >= 0.7f)
+        return false;
+
+    bool isWeak = false;
+    if (!IsWallEligibleForWallrun(tr.endpos, tr.plane.normal, isWeak))
+        return false;
+
+    if (outNormal)
+        *outNormal = tr.plane.normal;
+
+    return true;
+}
+
 bool CMomentumGameMovement::CheckJumpButton()
 {
     trace_t pm;
@@ -1335,15 +1417,21 @@ bool CMomentumGameMovement::CheckJumpButton()
         return false;
     }
 
-    const bool bJustJumped = ((mv->m_nButtons & IN_JUMP) && !(mv->m_nOldButtons & IN_JUMP));
+    const bool bPressedJump = (mv->m_nButtons & IN_JUMP);
+    const bool bJustPressedJump = (bPressedJump && !(mv->m_nOldButtons & IN_JUMP));
+    const bool bJustJumped = bJustPressedJump || ShouldDoBufferedJump();
 
     const bool bCoyoteJump = (gpGlobals->curtime <= m_pPlayer->m_flCoyoteTime);
     const bool bInAir = (player->GetGroundEntity() == nullptr);
     bool bDoAirJump = false;
+    const bool bParkour = g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR);
+
+    if (bParkour && bJustPressedJump && bInAir && !bCoyoteJump && !m_pPlayer->m_bIsWallrunning)
+        m_pPlayer->m_flJumpBufferTime = gpGlobals->curtime + sv_pk_jump_buffer_ticks.GetInt() * gpGlobals->interval_per_tick;
 
     if (bInAir)
     {
-        if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+        if (bParkour)
         {
             if (!bCoyoteJump)
                 mv->m_nOldButtons |= IN_JUMP;
@@ -1368,25 +1456,33 @@ bool CMomentumGameMovement::CheckJumpButton()
         PreventBunnyHopping();
     }
 
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR) && m_pPlayer->m_bIsWallrunning && !bJustJumped)
+    if (bParkour && m_pPlayer->m_bIsWallrunning && !bJustJumped)
         return false;
 
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+    if (bParkour && bInAir && !bCoyoteJump && !m_pPlayer->m_bIsWallrunning)
     {
-        if (bInAir && !bCoyoteJump)
+        if (!bJustPressedJump)
+            return false;
+
+        if (IsJumpBufferActive())
         {
-            if (bJustJumped && !m_pPlayer->m_bIsWallrunning && m_pPlayer->CanAirJump())
-            {
-                bDoAirJump = true;
-            }
-            else if (!m_pPlayer->m_bIsWallrunning)
-            {
+            // Buffered jumping: Don't airjump if we're about to hit the ground or a wall
+            const float bufferTime = sv_pk_jump_buffer_ticks.GetInt() * gpGlobals->interval_per_tick;
+            if (PredictGroundTouch(bufferTime) || PredictWallTouch(bufferTime))
                 return false;
-            }
+        }
+
+        if (m_pPlayer->CanAirJump())
+        {
+            bDoAirJump = true;
+        }
+        else
+        {
+            return false;
         }
     }
 
-    if (mv->m_nOldButtons & IN_JUMP)
+    if (mv->m_nOldButtons & IN_JUMP && !IsJumpBufferActive())
     {
         if (!bDoAirJump && !m_pPlayer->HasAutoBhop() && !m_pPlayer->m_bIsWallrunning)
         {
@@ -1574,6 +1670,7 @@ bool CMomentumGameMovement::CheckJumpButton()
 
     // Flag that we jumped.
     mv->m_nOldButtons |= IN_JUMP;
+    m_pPlayer->m_flJumpBufferTime = 0.0f;
 
 #ifndef CLIENT_DLL
     m_pPlayer->SetIsInAirDueToJump(true);
@@ -1999,7 +2096,7 @@ void CMomentumGameMovement::FullWalkMove()
     // Not fully underwater
     {
         // Was jump button pressed?
-        if (mv->m_nButtons & IN_JUMP)
+        if ((mv->m_nButtons & IN_JUMP) || ShouldDoBufferedJump())
         {
             // Player should be able to jump when on ground and sliding on a slide trigger 
             // that allows it, check for ground entity before jump so player actually jumps.
@@ -3455,23 +3552,11 @@ void CMomentumGameMovement::PredictWallrun()
     if (predictTime <= 0.0f)
         return;
 
-    const Vector start = mv->GetAbsOrigin();
-    const Vector end = start + mv->m_vecVelocity * predictTime;
-
-    trace_t tr;
-    TracePlayerBBox(start, end, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, tr);
-
-    if (tr.fraction == 1.0f)
+    Vector wallNormal;
+    if (!PredictWallTouch(predictTime, &wallNormal))
         return;
 
-    if (tr.plane.normal.z >= 0.7f)
-        return;
-
-    bool isWeak = false;
-    if (!IsWallEligibleForWallrun(tr.endpos, tr.plane.normal, isWeak))
-        return;
-
-    m_pPlayer->m_vecWallNormal = tr.plane.normal;
+    m_pPlayer->m_vecWallNormal = wallNormal;
 }
 
 void CMomentumGameMovement::FallAwayFromWall(const bool giveCoyoteTime)

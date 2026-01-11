@@ -135,6 +135,12 @@ sv_pk_airjump_max(
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Maximum number of airjumps allowed.");
 ConVar
+sv_pk_jump_buffer_ticks(
+	"sv_pk_jump_buffer_ticks",
+	"0",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Number of ticks to buffer jump input for ground and wall jumps.");
+ConVar
 sv_pk_airjump_height(
 	"sv_pk_airjump_height",
 	"60",
