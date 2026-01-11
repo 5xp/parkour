@@ -12,8 +12,8 @@
 
 #include "tier0/memdbgon.h"
 
-// 1 unit = 19.05mm -> 0.01905m -> 0.00001905Km(/s) -> 0.06858Km(/h)
-#define UPS_TO_KMH_FACTOR 0.06858f
+// 1 unit = 1 inch -> 0.09144km/h
+#define UPS_TO_KMH_FACTOR 0.09144f
 // 1 unit = 0.75", 1 mile = 63360. 0.75 / 63360 ~~> 0.00001184"(/s) ~~> 0.04262MPH
 #define UPS_TO_MPH_FACTOR 0.04262f
 
