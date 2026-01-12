@@ -3739,23 +3739,46 @@ ConVar pk_max_move("pk_max_move", "400.0");
 // Handle wallrun movement and friction
 void CMomentumGameMovement::WallrunMove()
 {
+    Vector wallNormal = m_pPlayer->m_vecWallNormal;
+
+    // Check if we're pushing away from the wall
+    Vector rawWishDir = m_vecForward * mv->m_flForwardMove + m_vecRight * mv->m_flSideMove;
+    rawWishDir.z = 0.0f;
+    if (rawWishDir.Normalized().Dot(wallNormal) <= 0.707f)
+    {
+        m_pPlayer->m_flWallrunPushAwayTime = 0.0f;
+    }
+    else if (m_pPlayer->m_flWallrunPushAwayTime == 0.0f)
+    {
+        m_pPlayer->m_flWallrunPushAwayTime = gpGlobals->curtime;
+    }
+
     float verticalFriction, horizontalFriction;
     verticalFriction = horizontalFriction = sv_pk_wallrun_friction.GetFloat();
 
-    // If we're moving downwards and slipping, restrict our ability to resist gravity
+    // If we're moving downwards and slipping, restrict our ability to resist gravity by scaling down friction and accel
+    float slipScale = 1.0f;
     if (mv->m_vecVelocity.z < 0.0f)
     {
-        // TODO: Multiply verticalFriction by slip scale based on time spent wallrunning
-    }
+        const float wallrunTime = gpGlobals->curtime - m_pPlayer->m_flWallrunStartTime;
+        slipScale = RemapValClamped(
+            wallrunTime,
+            sv_pk_wallrun_slip_starttime.GetFloat(),
+            sv_pk_wallrun_slip_starttime.GetFloat() + sv_pk_wallrun_slip_duration.GetFloat(),
+            1.0f, 0.0f);
 
-    Vector wallNormal = m_pPlayer->m_vecWallNormal;
+        if (rawWishDir.IsZero())
+        {
+            verticalFriction *= 1.0f - sv_pk_wallrun_noinput_slipfrac.GetFloat();
+        }
+    }
 
     Vector horzVelocity = mv->m_vecVelocity;
     horzVelocity.z = 0.0f;
     DoWallRunFriction(horzVelocity, horizontalFriction);
     Vector vertVelocity = mv->m_vecVelocity;
     vertVelocity.x = vertVelocity.y = 0.0f;
-    DoWallRunFriction(vertVelocity, verticalFriction);
+    DoWallRunFriction(vertVelocity, verticalFriction * slipScale);
     mv->m_vecVelocity.x = horzVelocity.x;
     mv->m_vecVelocity.y = horzVelocity.y;
     mv->m_vecVelocity.z = vertVelocity.z;
@@ -3817,19 +3840,7 @@ void CMomentumGameMovement::WallrunMove()
     if (vertInputFrac > 0.0f)
     {
         Vector vertWishDir(0.0f, 0.0f, wishDir.z > 0.0f ? 1.0f : -1.0f);
-        Accelerate(vertWishDir, vertWishSpeed, sv_pk_wallrun_accel_vertical.GetFloat());
-    }
-
-    // Check if we're pushing away from the wall
-    Vector rawWishDir = m_vecForward * mv->m_flForwardMove + m_vecRight * mv->m_flSideMove;
-    rawWishDir.z = 0.0f;
-    if (rawWishDir.Normalized().Dot(wallNormal) <= 0.707f)
-    {
-        m_pPlayer->m_flWallrunPushAwayTime = 0.0f;
-    }
-    else if (m_pPlayer->m_flWallrunPushAwayTime == 0.0f)
-    {
-        m_pPlayer->m_flWallrunPushAwayTime = gpGlobals->curtime;
+        Accelerate(vertWishDir, vertWishSpeed, sv_pk_wallrun_accel_vertical.GetFloat() * slipScale);
     }
 
     // Clip velocity to stay on the current wall plane
