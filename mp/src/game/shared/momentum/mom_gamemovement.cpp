@@ -3388,7 +3388,7 @@ bool CMomentumGameMovement::IsNearTopWall(const Vector &position, const Vector &
     if (tr.fraction == 1.0f)
         return false;
 
-    const float stepSize = player->GetStepSize();
+    const float stepSize = 16.0f;
     const Vector stepUp = tr.endpos + Vector(0.0f, 0.0f, stepSize);
     TracePlayerBBox(tr.endpos, stepUp, PlayerSolidMask(), COLLISION_GROUP_PLAYER_MOVEMENT, tr);
     if (tr.fraction < 1.0f)
@@ -3622,6 +3622,12 @@ void CMomentumGameMovement::StayOnWall()
     if (!CanFeetReachWall(mv->GetAbsOrigin(), m_pPlayer->m_vecWallNormal))
     {
         FallAwayFromWall(true);
+    }
+
+    if (mv->m_vecVelocity.z > 0.0f && IsNearTopWall(mv->GetAbsOrigin(), m_pPlayer->m_vecWallNormal))
+    {
+        const float decel = sv_pk_wallrun_avoid_top_wall_decel.GetFloat();
+        mv->m_vecVelocity.z = Approach(0.0f, mv->m_vecVelocity.z, sv_pk_wallrun_avoid_top_wall_decel.GetFloat() * gpGlobals->frametime);
     }
 }
 
