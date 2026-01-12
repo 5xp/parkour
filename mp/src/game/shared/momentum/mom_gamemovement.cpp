@@ -2465,7 +2465,7 @@ void CMomentumGameMovement::PerformLurchChecks()
 
     // Use buttons to derive wishdir 
     // If we use m_vecFoward/m_vecRight, we may get the wrong wishdir due to KeyState fractional behavior
-    float f = mv->m_nButtons & IN_FORWARD ? 1 : 0;
+    float f = (mv->m_nButtons & IN_FORWARD ? 1 : 0) - (mv->m_nButtons & IN_BACK ? 1 : 0);
     float s = (mv->m_nButtons & IN_MOVERIGHT ? 1 : 0) - (mv->m_nButtons & IN_MOVELEFT ? 1 : 0);
     Vector wishdir = m_vecForward * f + m_vecRight * s;
     wishdir.z = 0.0f;
