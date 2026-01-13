@@ -3484,6 +3484,8 @@ void CMomentumGameMovement::OnWallTouch(Vector &vecWallNormal, trace_t &pm)
     m_pPlayer->m_vecLastWallNormal = vecWallNormal;
     m_pPlayer->m_vecLastWallrunStartPos = mv->GetAbsOrigin();
     m_pPlayer->m_bHasLastWallrunStartPos = true;
+    m_pPlayer->m_flWallrunRelativeYaw = 0.0f;
+    m_pPlayer->m_flWallrunRelativeCorrectSpeed = 0.0f;
 #ifdef GAME_DLL
     m_pPlayer->DeriveMaxSpeed();
 #endif
@@ -3606,7 +3608,17 @@ void CMomentumGameMovement::StayOnWall()
 
     if (tr.fraction < 1.0f && tr.plane.normal.z < 0.7f)
     {
-        m_pPlayer->m_vecTargetWallNormal = tr.plane.normal;
+        const Vector newTarget = tr.plane.normal;
+        if (newTarget.Dot(m_pPlayer->m_vecTargetWallNormal) < 0.999f)
+        {
+            QAngle currentAngles;
+            VectorAngles(m_pPlayer->m_vecWallNormal, currentAngles);
+            QAngle targetAngles;
+            VectorAngles(newTarget, targetAngles);
+            const float yawDiff = AngleNormalize(targetAngles[YAW] - currentAngles[YAW]);
+            m_pPlayer->m_flWallrunRelativeCorrectSpeed = fabsf(yawDiff) * 2.0f;
+        }
+        m_pPlayer->m_vecTargetWallNormal = newTarget;
     }
 
     // Give the wall normal a chance to catch up before we check if we can stick to the wall
@@ -3635,6 +3647,7 @@ void CMomentumGameMovement::StayOnWall()
 void CMomentumGameMovement::UpdateWallNormal()
 {
     Vector wallNormal = m_pPlayer->m_vecWallNormal;
+    const Vector oldWallNormal = wallNormal;
     const Vector targetWallNormal = m_pPlayer->m_vecTargetWallNormal;
     const float dot = clamp(wallNormal.Dot(targetWallNormal), -1.0f, 1.0f);
     const float angle = acosf(dot);
@@ -3655,6 +3668,18 @@ void CMomentumGameMovement::UpdateWallNormal()
             wallNormal.NormalizeInPlace();
         }
     }
+
+    QAngle oldAngles;
+    VectorAngles(oldWallNormal, oldAngles);
+    QAngle newAngles;
+    VectorAngles(wallNormal, newAngles);
+    const QAngle angleDiff = QAngle(
+        AngleNormalize(newAngles[PITCH] - oldAngles[PITCH]),
+        AngleNormalize(newAngles[YAW] - oldAngles[YAW]),
+        AngleNormalize(newAngles[ROLL] - oldAngles[ROLL]));
+
+    m_pPlayer->m_flWallrunRelativeYaw =
+        AngleNormalize(m_pPlayer->m_flWallrunRelativeYaw + angleDiff[YAW]);
 
     m_pPlayer->m_vecWallNormal = wallNormal;
     m_pPlayer->m_vecLastWallNormal = wallNormal;
@@ -3877,6 +3902,8 @@ void CMomentumGameMovement::EndWallRun()
         return;
 
     m_pPlayer->m_vecWallNormal.Init();
+    m_pPlayer->m_flWallrunRelativeYaw = 0.0f;
+    m_pPlayer->m_flWallrunRelativeCorrectSpeed = 0.0f;
 
     //Msg( "End Wallrun\n" );
     //m_pPlayer->StopWallRunSound();

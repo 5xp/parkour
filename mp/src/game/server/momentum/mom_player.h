@@ -316,6 +316,8 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     Vector m_vecTargetWallNormal;
     Vector m_vecLastWallNormal;
     Vector m_vecLastWallrunStartPos;
+    CNetworkVar(float, m_flWallrunRelativeYaw);
+    CNetworkVar(float, m_flWallrunRelativeCorrectSpeed);
 
     HSOUNDSCRIPTHANDLE m_hssPowerSlideSound;
     HSOUNDSCRIPTHANDLE m_hssWallRunSound;

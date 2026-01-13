@@ -23,6 +23,8 @@ RecvPropBool(RECVINFO(m_bDoFOVScale)),
 RecvPropBool(RECVINFO(m_bIsWallrunning)),
 RecvPropFloat(RECVINFO(m_flWallrunStartTime)),
 RecvPropVector(RECVINFO(m_vecWallNormal)),
+RecvPropFloat(RECVINFO(m_flWallrunRelativeYaw)),
+RecvPropFloat(RECVINFO(m_flWallrunRelativeCorrectSpeed)),
 RecvPropBool(RECVINFO(m_bHasPracticeMode)),
 RecvPropBool(RECVINFO(m_bPreventPlayerBhop)),
 RecvPropInt(RECVINFO(m_iJumpTick)),
@@ -99,6 +101,11 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_vecTargetWallNormal.Init();
     m_vecLastWallNormal.Init();
     m_vecLastWallrunStartPos.Init();
+    m_flWallrunRelativeYaw = 0.0f;
+    m_flWallrunRelativeCorrectSpeed = 0.0f;
+    m_flWallrunRelativeYawOffset = 0.0f;
+    m_flWallrunRelativeYawNetPrev = 0.0f;
+    m_bWallrunRelativeYawInit = false;
 
     m_nButtonsToggled = 0;
 }
@@ -301,6 +308,7 @@ void C_MomentumPlayer::CalcViewRoll(QAngle &eyeAngles)
     if (!g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
         return;
 
+    ApplyWallrunViewCorrection(eyeAngles);
     ApplySlideViewTilt(eyeAngles);
     ApplyWallrunViewTilt(eyeAngles);
 }
@@ -316,6 +324,148 @@ void C_MomentumPlayer::ApplyWallrunViewTilt(QAngle &eyeAngles)
     const float wallrunRoll = CalcWallrunViewRoll(eyeAngles, m_bIsWallrunning, m_flWallrunStartTime, m_vecWallNormal,
                                                   m_vecWallrunTilt);
     eyeAngles[ROLL] += wallrunRoll;
+}
+
+void C_MomentumPlayer::ApplyWallrunViewCorrection(QAngle &eyeAngles)
+{
+    if (!m_bIsWallrunning)
+    {
+        m_flWallrunRelativeYawOffset = 0.0f;
+        m_flWallrunRelativeYawNetPrev = AngleNormalize(m_flWallrunRelativeYaw);
+        m_bWallrunRelativeYawInit = false;
+        return;
+    }
+
+    QAngle horzEyeAngles, vertEyeAngles;
+    horzEyeAngles = vertEyeAngles = eyeAngles;
+    horzEyeAngles[PITCH] = horzEyeAngles[ROLL] = 0.0f;
+    vertEyeAngles[YAW] = vertEyeAngles[ROLL] = 0.0f;
+
+    Vector forward;
+    AngleVectors(horzEyeAngles, &forward, nullptr, nullptr);
+
+    Vector velocity = GetAbsVelocity();
+    if (!velocity.IsZero() && forward.Dot(velocity) >= 0.0f)
+    {
+        const float playerSpeed = velocity.Length2D();
+        const float speedFrac = RemapValClamped(playerSpeed, 0.0f, 100.0f, 0.0f, 1.0f);
+
+        QAngle wallAngles;
+        VectorAngles(m_vecWallNormal, wallAngles);
+        wallAngles[PITCH] = 0.0f;
+        wallAngles[ROLL] = 0.0f;
+        CorrectWallrunYaw(m_vecWallNormal, horzEyeAngles, playerSpeed);
+        CorrectWallrunPitch(wallAngles, vertEyeAngles, speedFrac);
+    }
+    
+    const float yawCorrectionDelta = AngleNormalize(horzEyeAngles[YAW] - eyeAngles[YAW]);
+    PreserveWallrunYaw(horzEyeAngles, yawCorrectionDelta);
+    eyeAngles[YAW] = horzEyeAngles[YAW];
+    eyeAngles[PITCH] = vertEyeAngles[PITCH];
+
+    engine->SetViewAngles(eyeAngles);
+}
+
+// Preserve the player's yaw relative to the wall when the wall curves
+void C_MomentumPlayer::PreserveWallrunYaw(QAngle &horzEyeAngles, float yawCorrectionDelta)
+{
+    const float netYaw = AngleNormalize(m_flWallrunRelativeYaw);
+    if (!m_bWallrunRelativeYawInit)
+    {
+        m_flWallrunRelativeYawNetPrev = netYaw;
+        m_bWallrunRelativeYawInit = true;
+    }
+
+    const float deltaYaw = AngleDiff(netYaw, m_flWallrunRelativeYawNetPrev);
+    m_flWallrunRelativeYawNetPrev = netYaw;
+    m_flWallrunRelativeYawOffset = AngleNormalize(m_flWallrunRelativeYawOffset + deltaYaw);
+    if (yawCorrectionDelta * m_flWallrunRelativeYawOffset > 0.0f)
+    {
+        m_flWallrunRelativeYawOffset = AngleNormalize(m_flWallrunRelativeYawOffset - yawCorrectionDelta);
+    }
+
+    const float yawOffset = m_flWallrunRelativeYawOffset;
+
+    float approachSpeed = fabsf(yawOffset) * 2.0f * gpGlobals->frametime;
+    const float minSpeed = m_flWallrunRelativeCorrectSpeed * gpGlobals->frametime;
+    if (approachSpeed < minSpeed)
+    {
+        approachSpeed = minSpeed;
+    }
+
+    const float newYawOffset = AngleNormalize(ApproachAngle(0.0f, yawOffset, approachSpeed));
+    const float appliedYaw = AngleNormalize(yawOffset - newYawOffset);
+    m_flWallrunRelativeYawOffset = newYawOffset;
+    horzEyeAngles[YAW] = AngleNormalize(horzEyeAngles[YAW] + appliedYaw);
+}
+
+// Turn the player's view away from the wall when moving forward
+void C_MomentumPlayer::CorrectWallrunYaw(const Vector &wallNormal, QAngle &horzEyeAngles, float playerSpeed)
+{
+    const float safetyAngle = sv_pk_wallrun_viewcorrect_yaw_offset.GetFloat();
+
+    Vector wallForward = wallNormal.Cross(Vector(0.0f, 0.0f, 1.0f));
+
+    const float currentYaw = AngleNormalize(horzEyeAngles[YAW]);
+    QAngle wallForwardAngles;
+    VectorAngles(wallForward, wallForwardAngles);
+    float parallelYaw = wallForwardAngles[YAW];
+    const float parallelYawAlt = AngleNormalize(parallelYaw + 180.0f);
+    if (fabsf(AngleDiff(parallelYawAlt, currentYaw)) < fabsf(AngleDiff(parallelYaw, currentYaw)))
+        parallelYaw = parallelYawAlt;
+
+    Vector right;
+    AngleVectors(horzEyeAngles, nullptr, &right, nullptr);
+    const bool wallOnRight = wallNormal.Dot(right) < 0.0f;
+
+    const float targetYaw = AngleNormalize(parallelYaw + (wallOnRight ? safetyAngle : -safetyAngle));
+    const float diff = AngleNormalize(targetYaw - currentYaw);
+
+    if ((wallOnRight && diff < 0.0f) || (!wallOnRight && diff > 0.0f))
+        return;
+
+    const float absDiff = fabsf(diff);
+    const float speedClamped = min(playerSpeed, 90.0f);
+    const float strengthFactor = sinf(DEG2RAD(speedClamped));
+    if (strengthFactor <= 0.0f)
+        return;
+
+    const float maxRate = sv_pk_wallrun_viewcorrect_yaw_speed.GetFloat() * strengthFactor;
+    const float decayK = sv_pk_wallrun_viewcorrect_yaw_decay.GetFloat() * strengthFactor;
+
+    const float desiredRate = absDiff * decayK;
+    const float actualRate = min(maxRate, desiredRate);
+
+    float step = actualRate * gpGlobals->frametime;
+
+    horzEyeAngles[YAW] = AngleNormalize(ApproachAngle(targetYaw, currentYaw, step));
+}
+
+// Keep the player's pitch level
+void C_MomentumPlayer::CorrectWallrunPitch(const QAngle &wallAngles, QAngle &vertEyeAngles, float speedFrac)
+{
+    const float correctedAngleOffsetMin = sv_pk_wallrun_viewcorrect_pitch_min.GetFloat();
+    const float correctedAngleOffsetMax = sv_pk_wallrun_viewcorrect_pitch_max.GetFloat();
+    if (correctedAngleOffsetMin <= 0.0f || correctedAngleOffsetMax < correctedAngleOffsetMin)
+        return;
+
+    const float angleDiff = AngleDiff(wallAngles[PITCH], vertEyeAngles[PITCH]);
+    const float absDiff = fabsf(angleDiff);
+    if (absDiff < correctedAngleOffsetMin || absDiff > correctedAngleOffsetMax)
+        return;
+
+    const float correctedAngle1 = AngleNormalize(wallAngles[PITCH] + correctedAngleOffsetMin);
+    const float correctedAngle2 = AngleNormalize(wallAngles[PITCH] - correctedAngleOffsetMin);
+    const float diff1 = fabsf(AngleDiff(correctedAngle1, vertEyeAngles[PITCH]));
+    const float diff2 = fabsf(AngleDiff(correctedAngle2, vertEyeAngles[PITCH]));
+    const float targetPitch = diff1 < diff2 ? correctedAngle1 : correctedAngle2;
+
+    const float maxStep =
+        sv_pk_wallrun_viewcorrect_pitch_speed.GetFloat() * speedFrac * gpGlobals->frametime;
+    if (maxStep <= 0.0f)
+        return;
+
+    vertEyeAngles[PITCH] = AngleNormalize(ApproachAngle(targetPitch, vertEyeAngles[PITCH], maxStep));
 }
 
 float C_MomentumPlayer::GetFOV()

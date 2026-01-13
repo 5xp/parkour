@@ -114,8 +114,11 @@ public:
 private:
     void ApplySlideViewTilt(QAngle &eyeAngles);
     void ApplyWallrunViewTilt(QAngle &eyeAngles);
+    void ApplyWallrunViewCorrection(QAngle &eyeAngles);
+    void PreserveWallrunYaw(QAngle &horzEyeAngles, float yawCorrectionDelta);
+    void CorrectWallrunYaw(const Vector &wallNormal, QAngle &horzEyeAngles, float playerSpeed);
+    void CorrectWallrunPitch(const QAngle &wallAngles, QAngle &vertEyeAngles, float speedFrac);
 
-    // Mobility mod (parkour)
     CNetworkVar(bool, m_bIsPowerSliding);
     CNetworkVar(bool, m_bDoFOVScale);
     float m_flLastSlideBoost;
@@ -137,6 +140,11 @@ private:
     Vector m_vecTargetWallNormal;
     Vector m_vecLastWallNormal;
     Vector m_vecLastWallrunStartPos;
+    CNetworkVar(float, m_flWallrunRelativeYaw);
+    CNetworkVar(float, m_flWallrunRelativeCorrectSpeed);
+    float m_flWallrunRelativeYawOffset;
+    float m_flWallrunRelativeYawNetPrev;
+    bool m_bWallrunRelativeYawInit;
     
     HSOUNDSCRIPTHANDLE m_hssPowerSlideSound;
     HSOUNDSCRIPTHANDLE m_hssWallRunSound;

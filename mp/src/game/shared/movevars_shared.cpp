@@ -500,6 +500,42 @@ sv_pk_wallrun_viewtilt_max(
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Maximum amount of view tilt in degrees while wallrunning.");
 ConVar
+sv_pk_wallrun_viewcorrect_yaw_offset(
+	"sv_pk_wallrun_viewcorrect_yaw_offset",
+	"10.0",
+	FCVAR_REPLICATED,
+	"Moving forward while wallrunning will smooth the player's view to a minimum of this many degrees away from the wall parallel.");
+ConVar
+sv_pk_wallrun_viewcorrect_yaw_speed(
+	"sv_pk_wallrun_viewcorrect_yaw_speed",
+	"86.0",
+	FCVAR_REPLICATED,
+	"Max yaw correction speed in degrees per second.");
+ConVar
+sv_pk_wallrun_viewcorrect_yaw_decay(
+	"sv_pk_wallrun_viewcorrect_yaw_decay",
+	"3.44",
+	FCVAR_REPLICATED,
+	"Yaw correction decay coefficient.");
+ConVar
+sv_pk_wallrun_viewcorrect_pitch_min(
+	"sv_pk_wallrun_viewcorrect_pitch_min",
+	"30.0",
+	FCVAR_REPLICATED,
+	"Lower bound for pitch correction in degrees above or below the horizon.");
+ConVar
+sv_pk_wallrun_viewcorrect_pitch_max(
+	"sv_pk_wallrun_viewcorrect_pitch_max",
+	"50.0",
+	FCVAR_REPLICATED,
+	"Upper bound for pitch correction in degrees above or below the horizon.");
+ConVar
+sv_pk_wallrun_viewcorrect_pitch_speed(
+	"sv_pk_wallrun_viewcorrect_pitch_speed",
+	"35.0",
+	FCVAR_REPLICATED,
+	"Pitch correction speed in degrees per second while wallrunning.");
+ConVar
 sv_pk_coyote_time(
 	"sv_pk_coyote_time",
 	"0.2",

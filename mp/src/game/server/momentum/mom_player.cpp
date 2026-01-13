@@ -142,6 +142,8 @@ SendPropBool(SENDINFO(m_bDoFOVScale)),
 SendPropBool(SENDINFO(m_bIsWallrunning)),
 SendPropFloat(SENDINFO(m_flWallrunStartTime)),
 SendPropVector(SENDINFO(m_vecWallNormal)),
+SendPropAngle(SENDINFO(m_flWallrunRelativeYaw), 13),
+SendPropFloat(SENDINFO(m_flWallrunRelativeCorrectSpeed)),
 SendPropBool(SENDINFO(m_bIsWalking)),
 SendPropBool(SENDINFO(m_bHasPracticeMode)),
 SendPropBool(SENDINFO(m_bPreventPlayerBhop)),
@@ -277,6 +279,8 @@ CMomentumPlayer::CMomentumPlayer()
     m_vecTargetWallNormal.Init();
     m_vecLastWallNormal.Init();
     m_vecLastWallrunStartPos.Init();
+    m_flWallrunRelativeYaw = 0.0f;
+    m_flWallrunRelativeCorrectSpeed = 0.0f;
 
     m_nButtonsToggled = 0;
 }
