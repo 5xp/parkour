@@ -3846,6 +3846,12 @@ void CMomentumGameMovement::WallrunMove()
     // Clip velocity to stay on the current wall plane
     ClipVelocity(mv->m_vecVelocity, wallNormal, mv->m_vecVelocity, 1.0f);
 
+    if (fabsf(mv->m_vecVelocity.z) <= 1.0f)
+        mv->m_vecVelocity.z = 0.0f;
+
+    if (mv->m_vecVelocity.Length2DSqr() <= 1.0f)
+        mv->m_vecVelocity.x = mv->m_vecVelocity.y = 0.0f;
+
     // See if we can move directly
     Vector dest = mv->GetAbsOrigin() + mv->m_vecVelocity * gpGlobals->frametime;
     trace_t pm;
