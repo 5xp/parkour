@@ -1,5 +1,6 @@
 #include "cbase.h"
 #include "c_mom_player.h"
+#include "view.h"
 
 #include <steam/isteamuser.h>
 
@@ -85,6 +86,8 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_flLastSlideBoost = 0.0f;
     m_bDoFOVScale = false;
     m_flFOVScaleFrac = 0.0f;
+    m_flSprintTiltFrac = 0.0f;
+    m_flSprintTiltVelocity = 0.0f;
 
     m_iAirJumps = 0;
     m_flJumpBufferTime = 0.0f;
@@ -309,6 +312,7 @@ void C_MomentumPlayer::CalcViewRoll(QAngle &eyeAngles)
     ApplyWallrunViewCorrection(eyeAngles);
     ApplySlideViewTilt(eyeAngles);
     ApplyWallrunViewTilt(eyeAngles);
+    ApplySprintViewTilt(eyeAngles);
 }
 
 void C_MomentumPlayer::ApplySlideViewTilt(QAngle &eyeAngles)
@@ -322,6 +326,45 @@ void C_MomentumPlayer::ApplyWallrunViewTilt(QAngle &eyeAngles)
     const float wallrunRoll = CalcWallrunViewRoll(eyeAngles, m_bIsWallrunning, m_flWallrunStartTime, m_vecWallNormal,
                                                   m_vecWallrunTilt);
     eyeAngles[ROLL] += wallrunRoll;
+}
+
+void C_MomentumPlayer::ApplySprintViewTilt(QAngle &eyeAngles)
+{
+    const float dt = gpGlobals->frametime;
+    const bool bDoTilt = m_bIsSprinting && GetGroundEntity() != nullptr;
+    
+    const float yawDelta = bDoTilt ? AngleDiff(MainViewAngles()[YAW], PrevMainViewAngles()[YAW]) : 0.0f;
+    const float turnRate = yawDelta / dt;
+    const float targetFrac = clamp(turnRate / sv_pk_sprinttilt_turn_range.GetFloat(), -1.0f, 1.0f);
+
+    const float maxVel = sv_pk_sprinttilt_max_vel.GetFloat();
+    const float accel = sv_pk_sprint_tilt_accel.GetFloat();
+
+    const float dist = targetFrac - m_flSprintTiltFrac;
+    const float stopSpeed = sqrt(2.0f * accel * fabs(dist));
+
+    const float targetVel = min(maxVel, stopSpeed);
+    const float desiredVel = (dist > 0) ? targetVel : -targetVel;
+
+    m_flSprintTiltVelocity = Approach(desiredVel, m_flSprintTiltVelocity, accel * dt);
+
+    const float nextFrac = m_flSprintTiltFrac + (m_flSprintTiltVelocity * dt);
+
+    const bool crossedTarget = (m_flSprintTiltFrac < targetFrac && nextFrac >= targetFrac) ||
+                         (m_flSprintTiltFrac > targetFrac && nextFrac <= targetFrac);
+
+    if (crossedTarget)
+    {
+        m_flSprintTiltFrac = targetFrac;
+        m_flSprintTiltVelocity = 0.0f;
+    }
+    else
+    {
+        m_flSprintTiltFrac = nextFrac;
+    }
+
+    m_flSprintTiltFrac = clamp(m_flSprintTiltFrac, -1.0f, 1.0f);
+    eyeAngles[ROLL] += -m_flSprintTiltFrac * sv_pk_sprinttilt_max_roll.GetFloat();
 }
 
 void C_MomentumPlayer::ApplyWallrunViewCorrection(QAngle &eyeAngles)

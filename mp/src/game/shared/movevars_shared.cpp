@@ -536,6 +536,30 @@ sv_pk_wallrun_viewcorrect_pitch_speed(
 	FCVAR_REPLICATED,
 	"Pitch correction speed in degrees per second while wallrunning.");
 ConVar
+sv_pk_sprint_tilt_accel(
+	"sv_pk_sprint_tilt_accel",
+	"35.0",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Acceleration of sprint view tilt fraction.");
+ConVar
+sv_pk_sprinttilt_max_vel(
+	"sv_pk_sprinttilt_max_vel",
+	"2.0",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Maximum speed of sprint view tilt.");
+ConVar
+sv_pk_sprinttilt_turn_range(
+	"sv_pk_sprinttilt_turn_range",
+	"120.0",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Max turn rate that creates view tilt when sprinting.");
+ConVar
+sv_pk_sprinttilt_max_roll(
+	"sv_pk_sprinttilt_max_roll",
+	"2.0",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Maximum view roll while sprinting.");
+ConVar
 sv_pk_coyote_time(
 	"sv_pk_coyote_time",
 	"0.2",

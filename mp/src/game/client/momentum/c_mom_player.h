@@ -112,6 +112,7 @@ public:
     virtual void PlayWallRunSound(const Vector &vecOrigin);
     virtual void StopWallRunSound();
 private:
+    void ApplySprintViewTilt(QAngle &eyeAngles);
     void ApplySlideViewTilt(QAngle &eyeAngles);
     void ApplyWallrunViewTilt(QAngle &eyeAngles);
     void ApplyWallrunViewCorrection(QAngle &eyeAngles);
@@ -119,6 +120,8 @@ private:
     void CorrectWallrunYaw(const Vector &wallNormal, QAngle &horzEyeAngles, float playerSpeed);
     void CorrectWallrunPitch(const QAngle &wallAngles, QAngle &vertEyeAngles, float speedFrac);
 
+    float m_flSprintTiltFrac;
+    float m_flSprintTiltVelocity;
     CNetworkVar(bool, m_bIsPowerSliding);
     CNetworkVar(bool, m_bDoFOVScale);
     float m_flLastSlideBoost;
