@@ -338,7 +338,7 @@ void C_MomentumPlayer::ApplySprintViewTilt(QAngle &eyeAngles)
     const float targetFrac = clamp(turnRate / sv_pk_sprinttilt_turn_range.GetFloat(), -1.0f, 1.0f);
 
     const float maxVel = sv_pk_sprinttilt_max_vel.GetFloat();
-    const float accel = sv_pk_sprint_tilt_accel.GetFloat();
+    const float accel = sv_pk_sprinttilt_accel.GetFloat();
 
     const float dist = targetFrac - m_flSprintTiltFrac;
     const float stopSpeed = sqrt(2.0f * accel * fabs(dist));

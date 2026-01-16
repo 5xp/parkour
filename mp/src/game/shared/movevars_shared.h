@@ -83,7 +83,7 @@ extern ConVar sv_pk_wallrun_viewcorrect_yaw_decay;
 extern ConVar sv_pk_wallrun_viewcorrect_pitch_min;
 extern ConVar sv_pk_wallrun_viewcorrect_pitch_max;
 extern ConVar sv_pk_wallrun_viewcorrect_pitch_speed;
-extern ConVar sv_pk_sprint_tilt_accel;
+extern ConVar sv_pk_sprinttilt_accel;
 extern ConVar sv_pk_sprinttilt_max_vel;
 extern ConVar sv_pk_sprinttilt_turn_range;
 extern ConVar sv_pk_sprinttilt_max_roll;

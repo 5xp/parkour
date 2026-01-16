@@ -536,8 +536,8 @@ sv_pk_wallrun_viewcorrect_pitch_speed(
 	FCVAR_REPLICATED,
 	"Pitch correction speed in degrees per second while wallrunning.");
 ConVar
-sv_pk_sprint_tilt_accel(
-	"sv_pk_sprint_tilt_accel",
+sv_pk_sprinttilt_accel(
+	"sv_pk_sprinttilt_accel",
 	"35.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Acceleration of sprint view tilt fraction.");
