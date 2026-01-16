@@ -1082,7 +1082,7 @@ void CMomentumPlayer::OnZoneEnter(CTriggerZone *pTrigger)
             SetCurrentZoneTrigger(pStartTrigger);
             SetCurrentProgressTrigger(pStartTrigger);
 
-            if (g_pGameModeSystem->IsTF2BasedMode())
+            if (g_pGameModeSystem->IsTF2BasedMode() || g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
             {
                 if (g_pGameModeSystem->GameModeIs(GAMEMODE_SJ))
                 {
