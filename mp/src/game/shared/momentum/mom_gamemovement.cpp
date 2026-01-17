@@ -527,6 +527,19 @@ void CMomentumGameMovement::StepMove(Vector &vecDestination, trace_t &trace)
         ApplySlideStepVelocityReduction();
 }
 
+void CMomentumGameMovement::ApplySlideGravity()
+{
+    if (!m_pPlayer->m_bIsPowerSliding)
+        return;
+
+    Vector up(0.0f, 0.0f, 1.0f);
+    Vector groundNormal = m_pPlayer->GetInteraction(0).trace.plane.normal;
+    float gravityScale = 0.5f * GetCurrentGravity() * GetPlayerGravity() * gpGlobals->frametime;
+    Vector slideForce = groundNormal * up.Dot(groundNormal) * gravityScale;
+    mv->m_vecVelocity.x += slideForce.x;
+    mv->m_vecVelocity.y += slideForce.y;
+}
+
 void CMomentumGameMovement::ApplySlideStepVelocityReduction()
 {
     if (!m_pPlayer->m_bIsPowerSliding || mv->m_outStepHeight <= 0.0f)
@@ -2059,6 +2072,7 @@ void CMomentumGameMovement::FinishGravity()
         return;
 
     BaseClass::FinishGravity();
+    ApplySlideGravity();
 }
 
 void CMomentumGameMovement::StartGravity()
@@ -2067,6 +2081,7 @@ void CMomentumGameMovement::StartGravity()
         return;
 
     BaseClass::StartGravity();
+    ApplySlideGravity();
 }
 
 void CMomentumGameMovement::FullWalkMove()
@@ -3379,14 +3394,6 @@ void CMomentumGameMovement::PowerSlideFriction()
 
     mv->m_vecVelocity.x = velocity.x;
     mv->m_vecVelocity.y = velocity.y;
-
-    // Apply incline gravity
-    Vector up(0.0f, 0.0f, 1.0f);
-    Vector groundNormal = m_pPlayer->GetInteraction(0).trace.plane.normal;
-    float gravityScale = 0.5f * GetCurrentGravity() * GetPlayerGravity() * gpGlobals->frametime;
-    Vector slideForce = groundNormal * up.Dot(groundNormal) * gravityScale;
-    mv->m_vecVelocity.x += slideForce.x;
-    mv->m_vecVelocity.y += slideForce.y;
 }
 
 //-----------------------------------------------------------------------------
