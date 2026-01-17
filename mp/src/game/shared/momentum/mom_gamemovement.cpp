@@ -1829,7 +1829,7 @@ void CMomentumGameMovement::CategorizePosition()
     float flOffset = sv_considered_on_ground.GetFloat();
 
     const Vector bumpOrigin = mv->GetAbsOrigin();
-    const bool bParkourStick = g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR) && player->GetGroundEntity() != nullptr;
+    const bool bParkourStick = g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR);
 
     point[0] = bumpOrigin[0];
     point[1] = bumpOrigin[1];
@@ -1837,7 +1837,8 @@ void CMomentumGameMovement::CategorizePosition()
 
     float zvel = mv->m_vecVelocity[2];
     bool bMovingUp = zvel > 0.0f;
-    bool bMovingUpRapidly = zvel > NON_JUMP_VELOCITY && !bParkourStick;
+    bool bMovingUpRapidly = zvel > NON_JUMP_VELOCITY &&
+                            !(bParkourStick && player->GetGroundEntity() != nullptr);
     float flGroundEntityVelZ = 0.0f;
     if (bMovingUpRapidly)
     {
@@ -1963,11 +1964,12 @@ void CMomentumGameMovement::CategorizePosition()
                             // On modes that can't bhop, colliding before landing is better if it means they start sliding.
                             // If this check fails, we want to pretend they collided first and couldn't land,
                             // so we don't set the ground entity.
-                            if (g_pGameModeSystem->GetGameMode()->CanBhop() || vecNextVelocity.z <= NON_JUMP_VELOCITY)
+                            if (g_pGameModeSystem->GetGameMode()->CanBhop() || bParkourStick ||
+                                vecNextVelocity.z <= NON_JUMP_VELOCITY)
                             {
                                 // Only update velocity as if we collided if it results in horizontal speed gain.
                                 // Otherwise, we are probably going uphill and are actually trying to avoid this collision.
-                                if (vecNextVelocity.Length2DSqr() > mv->m_vecVelocity.Length2DSqr())
+                                if (!bParkourStick && vecNextVelocity.Length2DSqr() > mv->m_vecVelocity.Length2DSqr())
                                 {
                                     VectorCopy(vecNextVelocity, mv->m_vecVelocity);
                                 }
@@ -1987,11 +1989,11 @@ void CMomentumGameMovement::CategorizePosition()
 
                     // Set ground entity if the player is not going to slide on a ramp next tick and if they will be
                     // grounded (exception if the player wants to bhop)
-                    if (vecNextVelocity.z <= NON_JUMP_VELOCITY && bGrounded)
+                    if ((bParkourStick || vecNextVelocity.z <= NON_JUMP_VELOCITY) && bGrounded)
                     {
                         // Make sure we check clip velocity on slopes/surfs before setting the ground entity and nulling out
                         // velocity.z
-                        if (sv_slope_fix.GetBool() && vecNextVelocity.Length2DSqr() > mv->m_vecVelocity.Length2DSqr())
+                        if (!bParkourStick && sv_slope_fix.GetBool() && vecNextVelocity.Length2DSqr() > mv->m_vecVelocity.Length2DSqr())
                         {
                             VectorCopy(vecNextVelocity, mv->m_vecVelocity);
                         }
@@ -2577,8 +2579,16 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
             {
                 if (valid_plane.z >= 0.7f && valid_plane.z <= 1.0f)
                 {
-                    ClipVelocity(mv->m_vecVelocity, valid_plane, mv->m_vecVelocity, 1);
-                    VectorCopy(mv->m_vecVelocity, original_velocity);
+                    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+                    {
+                        mv->m_vecVelocity.z = 0.0f;
+                        VectorCopy(mv->m_vecVelocity, original_velocity);
+                    }
+                    else
+                    {
+                        ClipVelocity(mv->m_vecVelocity, valid_plane, mv->m_vecVelocity, 1);
+                        VectorCopy(mv->m_vecVelocity, original_velocity);
+                    }
                 }
                 else
                 {
@@ -2886,8 +2896,16 @@ int CMomentumGameMovement::TryPlayerMove(Vector *pFirstDest, trace_t *pFirstTrac
             // Is this a floor/slope that the player can walk on?
             if (planes[0][2] >= 0.7)
             {
-                ClipVelocity(original_velocity, planes[0], new_velocity, 1);
-                VectorCopy(new_velocity, original_velocity);
+                if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+                {
+                    VectorCopy(original_velocity, new_velocity);
+                    new_velocity.z = 0.0f;
+                }
+                else
+                {
+                    ClipVelocity(original_velocity, planes[0], new_velocity, 1);
+                    VectorCopy(new_velocity, original_velocity);
+                }
             }
             else // either the player is surfing or slammed into a wall
             {
