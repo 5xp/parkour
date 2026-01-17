@@ -121,6 +121,7 @@ private:
     bool IsJumpBufferActive();
     bool ShouldDoBufferedJump();
     void StartJumpBuffer();
+    void ApplySlideStepVelocityReduction();
     bool PredictGroundTouch(float predictTime, trace_t *outTrace = nullptr);
     bool PredictWallTouch(float predictTime, Vector *outNormal = nullptr);
 

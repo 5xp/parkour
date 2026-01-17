@@ -402,9 +402,15 @@ void CMomentumGameMovement::WalkMove()
 
 void CMomentumGameMovement::StepMove(Vector &vecDestination, trace_t &trace)
 {
+    const bool bHitStep = trace.fraction < 1.0f && trace.plane.normal[2] < 0.7f;
+
     if (!sv_rngfix_enable.GetBool() || g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
     {
         BaseClass::StepMove(vecDestination, trace);
+
+        if (bHitStep)
+            ApplySlideStepVelocityReduction();
+
         return;
     }
 
@@ -432,6 +438,10 @@ void CMomentumGameMovement::StepMove(Vector &vecDestination, trace_t &trace)
         {
             mv->m_outStepHeight += flStepDist;
         }
+
+        if (bHitStep)
+            ApplySlideStepVelocityReduction();
+
         return;
     }
 
@@ -479,6 +489,10 @@ void CMomentumGameMovement::StepMove(Vector &vecDestination, trace_t &trace)
         {
             mv->m_outStepHeight += flStepDist;
         }
+
+        if (bHitStep)
+            ApplySlideStepVelocityReduction();
+
         return;
     }
 
@@ -508,6 +522,26 @@ void CMomentumGameMovement::StepMove(Vector &vecDestination, trace_t &trace)
     {
         mv->m_outStepHeight += flStepDist;
     }
+
+    if (bHitStep)
+        ApplySlideStepVelocityReduction();
+}
+
+void CMomentumGameMovement::ApplySlideStepVelocityReduction()
+{
+    if (!m_pPlayer->m_bIsPowerSliding || mv->m_outStepHeight <= 0.0f)
+        return;
+
+    Vector velocity = mv->m_vecVelocity;
+    velocity.z = 0.0f;
+    float speed = velocity.Length();
+    float newSpeed = max(0.0f, speed - mv->m_outStepHeight * sv_pk_slide_step_velocity_reduction.GetFloat());
+
+    if (speed > 0.0f)
+        velocity *= newSpeed / speed;
+
+    mv->m_vecVelocity.x = velocity.x;
+    mv->m_vecVelocity.y = velocity.y;
 }
 
 bool CMomentumGameMovement::LadderMove()
@@ -2193,21 +2227,6 @@ void CMomentumGameMovement::FullWalkMove()
 
             if (pm.fraction == 1.0f)
                 mv->SetAbsOrigin(vecNewOrigin);
-        }
-
-        // Apply speed reductions when stepping up while sliding
-        if (m_pPlayer->m_bIsPowerSliding && mv->m_outStepHeight > 0.0f)
-        {
-            Vector velocity = mv->m_vecVelocity;
-            velocity.z = 0.0f;
-            float speed = velocity.Length();
-            float newSpeed = max(0.0f, speed - mv->m_outStepHeight * sv_pk_slide_step_velocity_reduction.GetFloat());
-
-            if (speed > 0.0f)
-                VectorScale(velocity, newSpeed / speed, velocity);
-
-            mv->m_vecVelocity[0] = velocity[0];
-            mv->m_vecVelocity[1] = velocity[1];
         }
 
         bool bInAirBefore = player->GetGroundEntity() == nullptr;
