@@ -331,6 +331,9 @@ void C_MomentumPlayer::ApplyWallrunViewTilt(QAngle &eyeAngles)
 void C_MomentumPlayer::ApplySprintViewTilt(QAngle &eyeAngles)
 {
     const float dt = gpGlobals->frametime;
+    if (dt <= 0.0f)
+        return;
+
     const bool bDoTilt = m_bIsSprinting && GetGroundEntity() != nullptr;
     
     const float yawDelta = bDoTilt ? AngleDiff(MainViewAngles()[YAW], PrevMainViewAngles()[YAW]) : 0.0f;
