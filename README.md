@@ -2,19 +2,25 @@
 
 > Momentum Mod is a free, standalone game built on the Source Engine centralizing the major movement gametypes found in games like Counter-Strike, Half-Life, Team Fortress, and Titanfall.
 
-## An Update From the Team
+## What is this?
 
-Momentum Mod was granted engine access from Valve! You can read what all this means on [the blog post about it](https://blog.momentum-mod.org/post/636153097782280192/you-got-a-license-for-that), but this ultimately means that unfortunately, **the game development from this point on has to be closed-source.** This means that there will be no further updates to this repository's code, as potentially leaking any Valve code has significantly negative outcomes for this project, and we are not going to take that risk.
+This is a WIP fork of [Momentum Mod](https://momentum-mod.org/), aiming to faithfully recreate Titanfall 2 movement for the Parkour gamemode.
 
-We are instead leaving the code on this repository completely public as a monument for how far we got while completely open source and with whose help. For those that have contributed, big or small, regardless of intent, the team and community thanks you greatly. Your work will *not* go uncredited!
+## How do I install this?
 
-While the game's development continues on a closed source repository, we will still be using this repository as a public issue tracker for the game! So if you find anything wrong, or have any suggestions, feel free to [open an issue about it](https://github.com/momentum-mod/game/issues/new/choose)! Issues get assigned to release project boards which you may view [at our organization's Projects boards page](https://github.com/orgs/momentum-mod/projects).
+For Windows users:
 
-If you wish to try out the game, we have an 0.8.7 public build over at [our Releases page](https://github.com/momentum-mod/game/releases). Note that this build is significantly scuffed compared to the one going to be found on Steam, but exists regardless for those looking to at least try out the game a little, and aren't afraid to get their hands dirty. You may also build this version yourself, if you so wish, by following the steps outlined [here](docs/build-guide.md) for your relevant platform (please note that MacOS _is not_ supported).
+1. Download and install the 0.8.7 public build of Momentum Mod: https://github.com/momentum-mod/game/releases/tag/0.8.7-public-eval
+2. Download the latest release: https://github.com/5xp/parkour/releases
+3. Extract `mom-pk-XXXX-XX-XX.zip` into the root of your 0.8.7 installation (where hl2.exe is).
+4. Launch the game by opening `run_momentum.bat`.
 
-Feel free to also check out our other, still-fully-open-source repositories, like our [website](https://github.com/momentum-mod/website), [discord bot](https://github.com/momentum-mod/discord-bot), and [documentation site](https://github.com/momentum-mod/docs)! We appreciate any and all help we get towards the project, which can lead to a Momentum key!
+## Notes
 
-Furthermore, please consider [wishlisting the game on Steam](https://store.steampowered.com/app/669270/Momentum_Mod/), and perhaps joining [our very active Discord server](https://discord.gg/n4v52uv) to stay up-to-date with the game's development!
+- Default tickrate is 128 for Parkour.
+- Make sure `mom_enable_overlapping_keys` is set to `1`. Leaving it at 0 enables last input priority, which prevents lurchless tech.
+- Try the jump buffer system with `sv_pk_jump_buffer_ticks 1`.
 
-Thank you,  
-Momentum Mod Development Team
+## Other info
+
+Reach out to @9xp in the #general-parkour channel in the [Momentum Mod Discord](https://discord.gg/momentummod) for help. You will also be able to find the Gauntlet map in the pins of this channel.
