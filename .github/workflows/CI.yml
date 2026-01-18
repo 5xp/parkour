@@ -18,7 +18,7 @@ jobs:
     env:
       POWERSHELL_TELEMETRY_OPTOUT: 1
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Generate VS solution
       working-directory: mp\src
       run: |
@@ -38,13 +38,13 @@ jobs:
         If ($LastExitCode -le 7) { echo "LastExitCode = $LastExitCode";$LastExitCode = 0 }
         echo "::set-output name=short_commit_sha::$(git rev-parse --short HEAD)"
     - name: Upload bin artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: bin_${{ runner.os }}-${{ steps.prepare_artifacts.outputs.short_commit_sha }}
         path: artifacts\bin
         if-no-files-found: error
     - name: Upload pdb artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: pdb_${{ runner.os }}-${{ steps.prepare_artifacts.outputs.short_commit_sha }}
         path: artifacts\pdb
@@ -56,7 +56,7 @@ jobs:
     env:
       USING_DOCKER: true
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - name: Creating game project files
         working-directory: mp/src
         run: ./creategameprojects
@@ -71,7 +71,7 @@ jobs:
           shopt -s extglob
           mv -v mp/game/bin/!(*.dbg) mp/game/momentum/bin/!(*.dbg|*.dll) artifacts
           echo "::set-output name=short_commit_sha::$(git rev-parse --short HEAD)"
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v4
         with:
           name: bin_${{ runner.os }}-${{ steps.prepare_artifacts.outputs.short_commit_sha }}
           path: artifacts
