@@ -1,16 +1,7 @@
 name: CI
 
 on:
-  push:
-    branches: [ master, develop ]
-    paths:
-      - .github/workflows/CI.yml
-      - mp/src/**
-  pull_request:
-    branches: [ master, develop ]
-    paths:
-      - .github/workflows/CI.yml
-      - mp/src/**
+  workflow_dispatch:
 
 jobs:
   build-windows:
@@ -49,29 +40,3 @@ jobs:
         name: pdb_${{ runner.os }}-${{ steps.prepare_artifacts.outputs.short_commit_sha }}
         path: artifacts\pdb
         if-no-files-found: error
-
-  build-linux:
-    runs-on: ubuntu-latest
-    container: scell555/steam-runtime-gcc-9:momentum
-    env:
-      USING_DOCKER: true
-    steps:
-      - uses: actions/checkout@v4
-      - name: Creating game project files
-        working-directory: mp/src
-        run: ./creategameprojects
-      - name: Building the game
-        working-directory: mp/src
-        run: make -j$(nproc --all) -f games.mak all-targets
-      - name: Prepare artifacts
-        id: prepare_artifacts
-        shell: bash
-        run: |
-          mkdir -v artifacts
-          shopt -s extglob
-          mv -v mp/game/bin/!(*.dbg) mp/game/momentum/bin/!(*.dbg|*.dll) artifacts
-          echo "::set-output name=short_commit_sha::$(git rev-parse --short HEAD)"
-      - uses: actions/upload-artifact@v4
-        with:
-          name: bin_${{ runner.os }}-${{ steps.prepare_artifacts.outputs.short_commit_sha }}
-          path: artifacts
