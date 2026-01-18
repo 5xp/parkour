@@ -529,7 +529,7 @@ void CMomentumGameMovement::StepMove(Vector &vecDestination, trace_t &trace)
 
 void CMomentumGameMovement::ApplySlideGravity()
 {
-    if (!m_pPlayer->m_bIsPowerSliding)
+    if (!m_pPlayer->m_bIsPowerSliding || player->GetGroundEntity() == nullptr)
         return;
 
     Vector up(0.0f, 0.0f, 1.0f);
