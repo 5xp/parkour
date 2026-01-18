@@ -379,7 +379,7 @@
         "MOM_Settings_Worldlight_Shadows" "World lights determine shadow direction"
         "MOM_Settings_Worldlight_Shadows_TT" "When enabled, world lights will determine entity shadow direction. NOTE: Can cause significant performance decreases in some maps!"
         "MOM_Settings_Overlapping_Keys" "Allow overlapping keys"
-        "MOM_Settings_Overlapping_Keys_TT" "When checked, key presses will overlap and null each other out, much like null binds."
+        "MOM_Settings_Overlapping_Keys_TT" "When checked, opposing key presses will overlap and cancel each other out."
         "MOM_Settings_Release_Forward_On_Jump" "Release forward key on jump"
         "MOM_Settings_Release_Forward_On_Jump_TT" "When checked the game will determine the forward key based on movement while on ground and release the determined key when you jump."
         "MOM_Settings_Draw_Viewmodel" "Show weapon viewmodels"

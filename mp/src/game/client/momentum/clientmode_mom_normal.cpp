@@ -30,7 +30,7 @@ using namespace vgui;
 // Globals
 //-----------------------------------------------------------------------------
 static MAKE_TOGGLE_CONVAR(mom_enable_overlapping_keys, "1", FCVAR_ARCHIVE,
-                          "If enabled the game will allow you to press 2 keys at once which will null out the movement gain.\n");
+                          "If enabled, the game will allow opposing movement keys to cancel each other out.\n");
 
 static MAKE_TOGGLE_CONVAR(mom_release_forward_on_jump, "0", FCVAR_ARCHIVE,
                           "When enabled the game will auto release the forward key which is determined by movement, so "
@@ -375,7 +375,7 @@ bool ClientModeMOMNormal::CreateMove(float flInputSampleTime, CUserCmd *cmd)
         }
     }
 
-    if (mom_enable_overlapping_keys.GetBool())
+    if (!mom_enable_overlapping_keys.GetBool())
     {
         cmd->buttons &= ~local_player->m_afButtonDisabled;
 
