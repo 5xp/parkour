@@ -1774,11 +1774,17 @@ void CMomentumGameMovement::DoAirJump()
     m_pPlayer->m_bDoFOVScale = false;
     player->m_Local.m_vecPunchAngleVel += SampleViewPunch(ViewPunchEvent::AIRJUMP) * PK_VIEWPUNCH_SCALE;
 
-    const float startZ = mv->m_vecVelocity.z;
-    const float minUpSpeed = sqrt(2.0f * sv_pk_airjump_height.GetFloat() * sv_gravity.GetFloat());
-    const float jumpFrac = sqrt(sv_pk_airjump_min_height_fraction.GetFloat());
-    const float delta = max(minUpSpeed - startZ, minUpSpeed * jumpFrac);
-    mv->m_vecVelocity.z += delta;
+    const float targetSpeed = sqrtf(2.0f * sv_pk_airjump_height.GetFloat() * sv_gravity.GetFloat());
+    const float jumpFrac = sv_pk_airjump_min_height_fraction.GetFloat();
+    const float speedThresholdSq = (1.0f - jumpFrac) * Sqr(targetSpeed);
+    if (mv->m_vecVelocity.z >= 0.0f && Sqr(mv->m_vecVelocity.z) >= speedThresholdSq)
+    {
+        mv->m_vecVelocity.z += sqrtf(jumpFrac) * targetSpeed;
+    }
+    else
+    {
+        mv->m_vecVelocity.z = targetSpeed;
+    }
 
     // Lurch
     Vector wishdir = m_vecForward * mv->m_flForwardMove + m_vecRight * mv->m_flSideMove;
