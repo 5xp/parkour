@@ -137,6 +137,7 @@ private:
     void UpdateWallNormal();
     void StayOnWall();
     int WallrunStepMove(const Vector &stepDir, Vector &vecDestination, trace_t &trace);
+    void OnLand(bool fromWallrun);
 
     bool m_bCheckForGrabbableLadder;
 };

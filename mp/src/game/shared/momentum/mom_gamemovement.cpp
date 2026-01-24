@@ -3119,34 +3119,7 @@ void CMomentumGameMovement::SetGroundEntity(const trace_t *pm)
 
         if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
         {
-            if (m_pPlayer->m_bIsWallrunning)
-                EndWallRun();
-
-            // start slide from air
-            if (mv->m_nOldButtons & IN_DUCK)
-                CheckPowerSlide();
-
-            const float fallSpeed = player->m_Local.m_flFallVelocity;
-            const float fallHeight = fallSpeed * fallSpeed  / (12.0f * 2.0f * GetCurrentGravity());
-            const float distMin = sv_pk_viewpunch_fall_distmin.GetFloat();
-            const float distMax = sv_pk_viewpunch_fall_distmax.GetFloat();
-            const float distMaxScale = sv_pk_viewpunch_fall_distmaxscale.GetFloat();
-            float fallFrac;
-            if (fallHeight < distMin)
-                fallFrac = clamp(sinf(fallHeight / distMin * M_PI_F * 0.5f), 0.0f, 1.0f);
-            else
-                fallFrac = RemapValClamped(fallHeight, distMin, distMax, 1.0f, distMaxScale);
-
-            player->m_Local.m_vecPunchAngleVel +=
-                SampleViewPunch(ViewPunchEvent::FALL) * fallFrac * PK_VIEWPUNCH_SCALE;
-
-            m_pPlayer->m_bWallrunHasBoost = false;
-            m_pPlayer->m_bWallrunWeak = false;
-            m_pPlayer->m_bHasLastWallrunStartPos = false;
-            m_pPlayer->m_vecWallNormal.Init();
-            m_pPlayer->m_vecTargetWallNormal.Init();
-            m_pPlayer->m_flWallrunFallAwayTime = 0.0f;
-            m_pPlayer->m_iAirJumps = sv_pk_airjump_max.GetInt();
+            OnLand(false);
         }
     }
     else if (player->GetGroundEntity() && !(pm && pm->m_pEnt))
@@ -3524,10 +3497,11 @@ void CMomentumGameMovement::OnWallTouch(Vector &vecWallNormal, trace_t &pm)
     if (!IsWallEligibleForWallrun(mv->GetAbsOrigin(), vecWallNormal, isWeak))
         return;
 
+    OnLand(true);
+
     m_pPlayer->m_bIsWallrunning = true;
     m_pPlayer->m_flWallrunStartTime = gpGlobals->curtime;
     m_pPlayer->m_flWallrunFallAwayTime = 0.0f;
-    m_pPlayer->m_iAirJumps = sv_pk_airjump_max.GetInt();
     m_pPlayer->m_bWallrunWeak = isWeak;
     m_pPlayer->m_vecWallNormal = vecWallNormal;
     m_pPlayer->m_vecTargetWallNormal = vecWallNormal;
@@ -3548,9 +3522,6 @@ void CMomentumGameMovement::OnWallTouch(Vector &vecWallNormal, trace_t &pm)
         mv->m_vecVelocity.z += addSpeed;
         m_pPlayer->m_bWallrunHasBoost = false;
     }
-
-    player->m_Local.m_vecPunchAngleVel +=
-        SampleViewPunch(ViewPunchEvent::FALL) * PK_VIEWPUNCH_SCALE;
 
     // Apply more sideways viewpunch when looking more parallel to the wall
     const Vector wallHorizontal = vecWallNormal.Cross(Vector(0.0f, 0.0f, -1.0f));
@@ -3951,17 +3922,48 @@ void CMomentumGameMovement::EndWallRun()
     if (!m_pPlayer->m_bIsWallrunning)
         return;
 
-    m_pPlayer->m_vecWallNormal.Init();
-    m_pPlayer->m_flWallrunRelativeYaw = 0.0f;
-    m_pPlayer->m_flWallrunRelativeCorrectSpeed = 0.0f;
-
-    //Msg( "End Wallrun\n" );
-    //m_pPlayer->StopWallRunSound();
     m_pPlayer->m_bIsWallrunning = false;
     m_pPlayer->m_flWallrunPushAwayTime = 0.0f;
+    m_pPlayer->m_flWallrunRelativeYaw = 0.0f;
+    m_pPlayer->m_flWallrunRelativeCorrectSpeed = 0.0f;
 #ifdef GAME_DLL
     m_pPlayer->DeriveMaxSpeed();
 #endif
+}
+
+void CMomentumGameMovement::OnLand(bool fromWallrun)
+{
+    if (!fromWallrun)
+        EndWallRun();
+
+    // start slide from air
+    if (!fromWallrun && mv->m_nOldButtons & IN_DUCK)
+        CheckPowerSlide();
+
+    m_pPlayer->m_iAirJumps = sv_pk_airjump_max.GetInt();
+
+    if (!fromWallrun)
+    {
+        m_pPlayer->m_bWallrunHasBoost = false;
+        m_pPlayer->m_bHasLastWallrunStartPos = false;
+        m_pPlayer->m_flWallrunFallAwayTime = 0.0f;
+    }
+
+    const float fallSpeed = player->m_Local.m_flFallVelocity;
+    if (fallSpeed < 0.0f)
+        return;
+
+    const float fallHeight = fallSpeed * fallSpeed / (12.0f * 2.0f * GetCurrentGravity());
+    const float distMin = sv_pk_viewpunch_fall_distmin.GetFloat();
+    const float distMax = sv_pk_viewpunch_fall_distmax.GetFloat();
+    const float distMaxScale = sv_pk_viewpunch_fall_distmaxscale.GetFloat();
+    float fallFrac;
+    if (fallHeight < distMin)
+        fallFrac = clamp(sinf(fallHeight / distMin * M_PI_F * 0.5f), 0.0f, 1.0f);
+    else
+        fallFrac = RemapValClamped(fallHeight, distMin, distMax, 1.0f, distMaxScale);
+
+    player->m_Local.m_vecPunchAngleVel += SampleViewPunch(ViewPunchEvent::FALL) * fallFrac * PK_VIEWPUNCH_SCALE;
 }
 
 // Expose our interface.
