@@ -3937,7 +3937,7 @@ void CMomentumGameMovement::OnLand(bool fromWallrun)
         EndWallRun();
 
     // start slide from air
-    if (!fromWallrun && mv->m_nOldButtons & IN_DUCK)
+    if (!fromWallrun && (m_pPlayer->m_Local.m_bDucking || m_pPlayer->m_Local.m_bDucked))
         CheckPowerSlide();
 
     m_pPlayer->m_iAirJumps = sv_pk_airjump_max.GetInt();
