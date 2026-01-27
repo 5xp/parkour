@@ -3412,11 +3412,22 @@ void CMomentumGameMovement::PowerSlideFriction()
 
     float decel = sv_pk_slide_decel.GetFloat();
 
+    bool bWantsToStop = false;
+
+    Vector wishdir = m_vecForward * mv->m_flForwardMove + m_vecRight * mv->m_flSideMove;
+    wishdir.z = 0.0f;
+    wishdir.NormalizeInPlace();
+    
+    // Inputting backwards - apply more decel
+    if (!wishdir.IsZero() && velocity.Dot(wishdir) < 0.0f)
+        bWantsToStop = true;
+
     // Trying to stand up - apply more decel
     if (!(player->m_nButtons & IN_DUCK) && speed > sv_pk_slide_max_stop_speed.GetFloat())
-    {
+        bWantsToStop = true;
+
+    if (bWantsToStop)
         decel = sv_pk_slide_want_to_stop_decel.GetFloat();
-    }
 
     float decay = min(1.f, sv_pk_slide_velocity_decay.GetFloat());
     float decayScale = pow(decay, gpGlobals->frametime);

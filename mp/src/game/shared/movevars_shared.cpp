@@ -220,9 +220,9 @@ sv_pk_slide_max_stop_speed(
 ConVar 
 sv_pk_slide_want_to_stop_decel(
 	"sv_pk_slide_want_to_stop_decel", 
-	"350.0",
+	"400.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,    
-	"Deceleration is replaced with this when trying to stand up during a slide when over sv_pk_slide_max_stop_speed.");
+	"Deceleration during a slide is replaced with this when trying to move backwards or trying to stand up when over sv_pk_slide_max_stop_speed.");
 ConVar 
 sv_pk_slide_max_angle_dot(
 	"sv_pk_slide_max_angle_dot", 
