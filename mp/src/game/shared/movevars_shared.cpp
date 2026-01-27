@@ -123,6 +123,12 @@ MAKE_TOGGLE_CONVAR(sv_edge_fix, "1", FCVAR_MAPPING, "Makes edgebugs more consist
 MAKE_TOGGLE_CONVAR(mom_pk_autosprint_enable, "1", FCVAR_ARCHIVE | FCVAR_USERINFO, "Enable autosprint.");
 
 ConVar
+sv_pk_gravity_scale(
+	"sv_pk_gravity_scale", 
+	"0.75",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,    
+	"How affected the player is by gravity.");
+ConVar
 sv_pk_acceleration(
 	"sv_pk_acceleration",
 	"2500",
@@ -135,23 +141,53 @@ sv_pk_deceleration(
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
     "Amount of linear deceleration away from the desired direction of movement. Defaults to 0.6 * acceleration.");
 ConVar
+sv_pk_sprinttilt_accel(
+	"sv_pk_sprinttilt_accel",
+	"35.0",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Acceleration of sprint view tilt fraction.");
+ConVar
+sv_pk_sprinttilt_max_vel(
+	"sv_pk_sprinttilt_max_vel",
+	"2.0",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Maximum speed of sprint view tilt.");
+ConVar
+sv_pk_sprinttilt_turn_range(
+	"sv_pk_sprinttilt_turn_range",
+	"120.0",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Max turn rate that creates view tilt when sprinting.");
+ConVar
+sv_pk_sprinttilt_max_roll(
+	"sv_pk_sprinttilt_max_roll",
+	"2.0",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Maximum view roll while sprinting.");
+ConVar
+sv_pk_coyote_time(
+	"sv_pk_coyote_time",
+	"0.2",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Time after leaving a surface that jumps are still allowed.");
+ConVar
 sv_pk_jump_height(
 	"sv_pk_jump_height",
 	"60",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Regular jump height");
 ConVar
-sv_pk_airjump_max(
-	"sv_pk_airjump_max",
-	"1",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Maximum number of airjumps allowed.");
-ConVar
 sv_pk_jump_buffer_ticks(
 	"sv_pk_jump_buffer_ticks",
 	"0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Number of ticks to buffer jump input for ground and wall jumps.");
+ConVar
+sv_pk_airjump_max(
+	"sv_pk_airjump_max",
+	"1",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Maximum number of airjumps allowed.");
 ConVar
 sv_pk_airjump_height(
 	"sv_pk_airjump_height",
@@ -169,6 +205,30 @@ sv_pk_airjump_horz_speed(
 	"sv_pk_airjump_horz_speed",
 	"180",
 	FCVAR_NOTIFY | FCVAR_REPLICATED);
+ConVar
+sv_pk_skip_time(
+	"sv_pk_skip_time",
+	"0.1",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Player is considered skipping if they jump within this number of seconds after landing");
+ConVar
+sv_pk_skip_speed_reduce(
+	"sv_pk_skip_speed_reduce",
+	"12",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Speed lost when skipping");
+ConVar
+sv_pk_skip_speed_retain(
+	"sv_pk_skip_speed_retain",
+	"450",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Skipping will not drop speed below this");
+ConVar
+sv_pk_skip_jump_height_fraction(
+	"sv_pk_skip_jump_height_fraction",
+	"0.75",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Fraction of jump height when skipping");
 ConVar
 sv_pk_lurch_periodmin(
 	"sv_pk_lurch_periodmin",
@@ -193,37 +253,31 @@ sv_pk_lurch_max(
 	"0.7",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Maximum amount of velocity change toward desired lurch target as a fraction of sprinting speed.");
-ConVar 
-sv_pk_gravity_scale(
-	"sv_pk_gravity_scale", 
-	"0.75",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,    
-	"How affected the player is by gravity.");
-ConVar 
+ConVar
 sv_pk_slide_required_start_speed(
 	"sv_pk_slide_required_start_speed", 
 	"200.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,    
 	"Required speed to start a slide.");
-ConVar 
+ConVar
 sv_pk_slide_stop_speed(
 	"sv_pk_slide_stop_speed", 
 	"125.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,    
 	"Falling under this speed will end a slide.");
-ConVar 
+ConVar
 sv_pk_slide_max_stop_speed(
 	"sv_pk_slide_max_stop_speed", 
 	"350.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,    
 	"Slide may not end while speed is above this.");
-ConVar 
+ConVar
 sv_pk_slide_want_to_stop_decel(
 	"sv_pk_slide_want_to_stop_decel", 
 	"400.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,    
 	"Deceleration during a slide is replaced with this when trying to move backwards or trying to stand up when over sv_pk_slide_max_stop_speed.");
-ConVar 
+ConVar
 sv_pk_slide_max_angle_dot(
 	"sv_pk_slide_max_angle_dot", 
 	"0.6",
@@ -319,30 +373,6 @@ sv_pk_slide_viewtilt_player_speed(
 	"400",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"View tilt while sliding is at full at this speed.");
-ConVar
-sv_pk_skip_time(
-	"sv_pk_skip_time",
-	"0.1",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Player is considered skipping if they jump within this number of seconds after landing");
-ConVar
-sv_pk_skip_speed_reduce(
-	"sv_pk_skip_speed_reduce",
-	"12",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Speed lost when skipping");
-ConVar
-sv_pk_skip_jump_height_fraction(
-	"sv_pk_skip_jump_height_fraction",
-	"0.75",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Fraction of jump height when skipping");
-ConVar
-sv_pk_skip_speed_retain(
-	"sv_pk_skip_speed_retain",
-	"450",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Skipping will not drop speed below this");
 ConVar
 sv_pk_wallrun_jump_upspeed(
 	"sv_pk_wallrun_jump_upspeed",
@@ -547,36 +577,6 @@ sv_pk_wallrun_viewcorrect_pitch_speed(
 	"35.0",
 	FCVAR_REPLICATED,
 	"Pitch correction speed in degrees per second while wallrunning.");
-ConVar
-sv_pk_sprinttilt_accel(
-	"sv_pk_sprinttilt_accel",
-	"35.0",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Acceleration of sprint view tilt fraction.");
-ConVar
-sv_pk_sprinttilt_max_vel(
-	"sv_pk_sprinttilt_max_vel",
-	"2.0",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Maximum speed of sprint view tilt.");
-ConVar
-sv_pk_sprinttilt_turn_range(
-	"sv_pk_sprinttilt_turn_range",
-	"120.0",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Max turn rate that creates view tilt when sprinting.");
-ConVar
-sv_pk_sprinttilt_max_roll(
-	"sv_pk_sprinttilt_max_roll",
-	"2.0",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Maximum view roll while sprinting.");
-ConVar
-sv_pk_coyote_time(
-	"sv_pk_coyote_time",
-	"0.2",
-	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Time after leaving a surface that jumps are still allowed.");
 ConVar
 sv_pk_viewpunch_fall_distmin(
 	"sv_pk_viewpunch_fall_distmin",
