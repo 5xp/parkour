@@ -90,7 +90,6 @@ extern ConVar sv_pk_sprinttilt_max_vel;
 extern ConVar sv_pk_sprinttilt_turn_range;
 extern ConVar sv_pk_sprinttilt_max_roll;
 extern ConVar sv_pk_coyote_time;
-extern ConVar sv_pk_slide_lock;
 extern ConVar sv_pk_gravity_scale;
 extern ConVar sv_pk_jump_height;
 extern ConVar sv_pk_airjump_max;

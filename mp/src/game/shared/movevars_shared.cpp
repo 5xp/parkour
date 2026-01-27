@@ -256,9 +256,9 @@ sv_pk_slide_jump_height(
 ConVar
 sv_pk_slide_accel(
 	"sv_pk_slide_accel",
-	"20.0", // TODO: figure out this value
+	"50.0",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
-	"Acceleration from input while sliding.");
+	"Steering acceleration from input while sliding.");
 ConVar
 sv_pk_slide_decel(
 	"sv_pk_slide_decel",
@@ -577,12 +577,6 @@ sv_pk_coyote_time(
 	"0.2",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Time after leaving a surface that jumps are still allowed.");
-ConVar
-sv_pk_slide_lock(
-	"sv_pk_slide_lock",
-	"1",
-	FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_ARCHIVE,
-	"Locks your move direction when sliding");
 ConVar
 sv_pk_viewpunch_fall_distmin(
 	"sv_pk_viewpunch_fall_distmin",

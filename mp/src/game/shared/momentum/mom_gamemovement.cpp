@@ -283,26 +283,7 @@ void CMomentumGameMovement::WalkMove()
         wishvel[i] = forward[i] * fmove + right[i] * smove;
 
     wishvel[2] = 0.0f; // Zero out z part of velocity
-
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR) &&
-        m_pPlayer->m_bIsPowerSliding &&
-        (sv_pk_slide_lock.GetBool()
-#ifndef CLIENT_DLL
-        || (player->GetGroundVPhysics() && wishvel.Length2D() == 0.0f)
-#endif
-         ))
-    {
-        // can't change direction in slide if sv_pk_slide_lock on.
-        // Also there's some weird behaviour with sliding on 
-        // physics objects which can be fixed by pretending they 
-        // are holding the button down 
-        VectorCopy(mv->m_vecVelocity, wishdir);
-    }
-    else
-    {
-        VectorCopy(wishvel, wishdir); // Determine maginitude of speed of move
-    }
-
+    VectorCopy(wishvel, wishdir); // Determine maginitude of speed of move
 
     wishspeed = VectorNormalize(wishdir);
 
@@ -323,7 +304,10 @@ void CMomentumGameMovement::WalkMove()
     // Set pmove velocity
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
     {
-        ParkourAccelerate(mv->m_vecVelocity, wishdir, wishspeed, sv_pk_acceleration.GetFloat());
+        if (m_pPlayer->m_bIsPowerSliding)
+            ParkourAccelerate(mv->m_vecVelocity, wishdir, mv->m_vecVelocity.Length(), sv_pk_slide_accel.GetFloat());
+        else
+            ParkourAccelerate(mv->m_vecVelocity, wishdir, wishspeed, sv_pk_acceleration.GetFloat());
     }
     else
     {
