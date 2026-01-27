@@ -123,6 +123,18 @@ MAKE_TOGGLE_CONVAR(sv_edge_fix, "1", FCVAR_MAPPING, "Makes edgebugs more consist
 MAKE_TOGGLE_CONVAR(mom_pk_autosprint_enable, "1", FCVAR_ARCHIVE | FCVAR_USERINFO, "Enable autosprint.");
 
 ConVar
+sv_pk_acceleration(
+	"sv_pk_acceleration",
+	"2500",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Amount of linear acceleration while moving on the ground.");
+ConVar
+sv_pk_deceleration(
+	"sv_pk_deceleration",
+	"-1",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+    "Amount of linear deceleration away from the desired direction of movement. Defaults to 0.6 * acceleration.");
+ConVar
 sv_pk_jump_height(
 	"sv_pk_jump_height",
 	"60",

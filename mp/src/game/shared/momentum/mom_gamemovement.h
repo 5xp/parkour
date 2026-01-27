@@ -118,6 +118,9 @@ public:
 private:
     CMomentumPlayer *m_pPlayer;
 
+    void ParkourAccelerate(Vector &velocity, const Vector &wishDir, const float wishSpeed, const float acceleration);
+    void ParkourDecelerate(Vector &velocity, const Vector &wishDir, const float wishSpeed, const float deceleration);
+
     bool IsJumpBufferActive();
     bool ShouldDoBufferedJump();
     void StartJumpBuffer();

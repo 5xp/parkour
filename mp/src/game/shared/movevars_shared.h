@@ -49,6 +49,8 @@ extern ConVar sv_ground_trigger_fix;
 extern ConVar sv_edge_fix;
 // - - Parkour
 extern ConVar mom_pk_autosprint_enable;
+extern ConVar sv_pk_acceleration;
+extern ConVar sv_pk_deceleration;
 extern ConVar sv_pk_wallrun_jump_upspeed;
 extern ConVar sv_pk_wallrun_jump_outwardspeed;
 extern ConVar sv_pk_wallrun_jump_inputdirspeed;

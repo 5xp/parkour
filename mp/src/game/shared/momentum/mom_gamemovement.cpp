@@ -174,6 +174,54 @@ float CMomentumGameMovement::ClimbSpeed() const
     return (mv->m_nButtons & IN_DUCK ? BaseClass::ClimbSpeed() * DUCK_SPEED_MULTIPLIER : BaseClass::ClimbSpeed());
 }
 
+void CMomentumGameMovement::ParkourAccelerate(Vector &velocity, const Vector &wishDir, const float wishSpeed,
+                                              const float acceleration)
+{
+    const float wishDirSpeed = velocity.Dot(wishDir);
+    const float addSpeed = max(0.0f, wishSpeed - wishDirSpeed);
+    const float accelSpeed = min(addSpeed, acceleration * gpGlobals->frametime);
+    const float maxSpeedSqr = max(Sqr(wishSpeed), velocity.LengthSqr());
+
+    velocity += wishDir * accelSpeed;
+
+    if (velocity.LengthSqr() > maxSpeedSqr)
+    {
+        velocity = velocity.Normalized() * sqrtf(maxSpeedSqr);
+    }
+}
+
+void CMomentumGameMovement::ParkourDecelerate(Vector &velocity, const Vector &wishDir, const float wishSpeed,
+                                              const float deceleration)
+{
+    if (velocity.IsLengthLessThan(0.1f))
+        return;
+
+    const float wishDirSpeed = velocity.Dot(wishDir);
+
+    if (wishDirSpeed > wishSpeed)
+    {
+        // Apply deceleration to the entire velocity vector
+        const float speed = velocity.Length();
+        const float drop = deceleration * gpGlobals->frametime;
+        const float newSpeed = max(0.0f, speed - drop);
+        velocity *= (newSpeed / speed);
+    }
+    else
+    {
+        // Apply deceleration to the perpendicular component
+        const Vector forwardVel = wishDir * wishDirSpeed;
+        const Vector velPerp = velocity - forwardVel;
+        const float speedPerp = velPerp.Length();
+        if (!velPerp.IsZero())
+        {
+            const float drop = deceleration * gpGlobals->frametime;
+            const float newSpeedPerp = max(0.0f, speedPerp - drop);
+
+            velocity = forwardVel + velPerp * (newSpeedPerp / speedPerp);
+        }
+    }
+}
+
 void CMomentumGameMovement::WalkMove()
 {
     int i;
@@ -272,21 +320,14 @@ void CMomentumGameMovement::WalkMove()
         wishspeed = PK_CROUCH_SPEED;
     }
 
-    float oldspeed = mv->m_vecVelocity.Length2D();
-
     // Set pmove velocity
-    Accelerate(wishdir, wishspeed, sv_accelerate.GetFloat());
-
-    // Cap ground speed if the speed is gained from the above Accelerate()
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
     {
-        if (mv->m_vecVelocity.Length2D() >= wishspeed)
-        {
-            float cappedSpeed = Max(wishspeed, oldspeed);
-            Vector direction = mv->m_vecVelocity;
-            VectorNormalizeFast(direction);
-            mv->m_vecVelocity = direction * cappedSpeed;
-        }
+        ParkourAccelerate(mv->m_vecVelocity, wishdir, wishspeed, sv_pk_acceleration.GetFloat());
+    }
+    else
+    {
+        Accelerate(wishdir, wishspeed, sv_accelerate.GetFloat());
     }
 
     // Cap ground movement speed in tf2 modes
@@ -826,7 +867,32 @@ void CMomentumGameMovement::Friction()
     Vector velocity = mv->m_vecVelocity;
     velocity.z = 0.0f;
 
-    DoFriction(velocity);
+    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+    {
+        DoFriction(velocity);
+    }
+    else
+    {
+        Vector wishdir = m_vecForward * mv->m_flForwardMove + m_vecRight * mv->m_flSideMove;
+        wishdir.z = 0.0f;
+
+        float wishspeed = wishdir.NormalizeInPlace();
+        if ((wishspeed != 0.0f) && (wishspeed > mv->m_flMaxSpeed))
+        {
+            wishspeed = mv->m_flMaxSpeed;
+        }
+
+        if ((mv->m_nButtons & IN_DUCK) || (player->GetFlags() & FL_DUCKING))
+        {
+            wishspeed = PK_CROUCH_SPEED;
+        }
+
+        float deceleration = sv_pk_deceleration.GetFloat();
+        if (deceleration < 0.0f)
+            deceleration = 0.6f * sv_pk_acceleration.GetFloat();
+
+        ParkourDecelerate(velocity, wishdir, wishspeed, deceleration);
+    }
 
     mv->m_vecVelocity.x = velocity.x;
     mv->m_vecVelocity.y = velocity.y;
@@ -2177,7 +2243,7 @@ void CMomentumGameMovement::FullWalkMove()
             {
                 PowerSlideFriction();
             }
-            else // not powersliding - normal friction
+            else
             {
                 Friction();
             }
