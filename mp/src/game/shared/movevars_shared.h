@@ -51,6 +51,7 @@ extern ConVar sv_edge_fix;
 extern ConVar mom_pk_autosprint_enable;
 extern ConVar sv_pk_gravity_scale;
 extern ConVar sv_pk_acceleration;
+extern ConVar sv_pk_extra_air_acceleration;
 extern ConVar sv_pk_deceleration;
 extern ConVar sv_pk_sprinttilt_accel;
 extern ConVar sv_pk_sprinttilt_max_vel;

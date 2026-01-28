@@ -17,6 +17,7 @@ public:
 
     void SetGroundEntity(const trace_t *pm) override;
 
+    void AirAccelerate( Vector& wishdir, float wishspeed, float accel ) override;
     bool CanAccelerate() override;
     bool CheckJumpButton() override;
     void PlayerMove() override;

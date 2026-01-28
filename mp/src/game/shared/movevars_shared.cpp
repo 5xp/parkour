@@ -135,6 +135,12 @@ sv_pk_acceleration(
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Amount of linear acceleration while moving on the ground.");
 ConVar
+sv_pk_extra_air_acceleration(
+	"sv_pk_extra_air_acceleration",
+	"2.0",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Additional air acceleration to help start wallruns.");
+ConVar
 sv_pk_deceleration(
 	"sv_pk_deceleration",
 	"-1",

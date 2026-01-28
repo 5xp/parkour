@@ -1725,9 +1725,7 @@ void CGameMovement::AirAccelerate( Vector& wishdir, float wishspeed, float accel
 		return;
 
 	// Determine acceleration speed after acceleration
-	accelspeed = accel * gpGlobals->frametime;
-    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
-        accelspeed *= wishspeed * player->m_surfaceFriction;
+	accelspeed = accel * wishspeed * gpGlobals->frametime * player->m_surfaceFriction;
 
 	// Cap it
 	if (accelspeed > addspeed)

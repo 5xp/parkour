@@ -178,8 +178,12 @@ void CMomentumGameMovement::ParkourAccelerate(Vector &velocity, const Vector &wi
                                               const float acceleration)
 {
     const float wishDirSpeed = velocity.Dot(wishDir);
-    const float addSpeed = max(0.0f, wishSpeed - wishDirSpeed);
-    const float accelSpeed = min(addSpeed, acceleration * gpGlobals->frametime);
+
+    const float addSpeed = wishSpeed - wishDirSpeed;
+    if (addSpeed <= 0.0f)
+        return;
+
+    const float accelSpeed = acceleration * gpGlobals->frametime;
     const float maxSpeedSqr = max(Sqr(wishSpeed), velocity.LengthSqr());
 
     velocity += wishDir * accelSpeed;
@@ -3219,6 +3223,32 @@ void CMomentumGameMovement::SetGroundEntity(const trace_t *pm)
         m_pPlayer->OnLand();
 #endif
     }
+}
+
+void CMomentumGameMovement::AirAccelerate(Vector& wishdir, float wishspeed, float accel)
+{
+    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+    {
+        BaseClass::AirAccelerate(wishdir, wishspeed, accel);
+        return;
+    }
+
+    wishspeed = min(wishspeed, GetAirSpeedCap());
+    const float currentSpeed = mv->m_vecVelocity.Dot(wishdir);
+
+    const float addSpeed = wishspeed - currentSpeed;
+    if (addSpeed <= 0.0f)
+    {
+        // If we're not gaining any speed, redirect our velocity a bit
+        // This helps us begin a wallrun when flush with the wall
+        ParkourAccelerate(mv->m_vecVelocity, wishdir, mv->m_vecVelocity.Length(),
+                          sv_pk_extra_air_acceleration.GetFloat());
+        return;
+    }
+
+    const float accelSpeed = min(addSpeed, accel * gpGlobals->frametime);
+
+    mv->m_vecVelocity += wishdir * accelSpeed;
 }
 
 bool CMomentumGameMovement::CanAccelerate()
