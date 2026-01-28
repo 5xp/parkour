@@ -124,6 +124,7 @@ private:
     float m_flSprintTiltVelocity;
     CNetworkVar(bool, m_bIsPowerSliding);
     CNetworkVar(bool, m_bDoFOVScale);
+    bool m_bUsedSlideBoost;
     float m_flLastSlideBoost;
     float m_flFOVScaleFrac;
 

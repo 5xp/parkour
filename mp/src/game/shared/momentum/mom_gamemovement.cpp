@@ -1648,6 +1648,20 @@ bool CMomentumGameMovement::CheckJumpButton()
     float startz = mv->m_vecVelocity[2];
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
     {
+        Vector velocity = mv->m_vecVelocity;
+        velocity.z = 0.0f;
+        const float slideJumpSpeed = sv_pk_slide_max_jump_speed.GetFloat();
+        const bool bRoundUpSpeed = m_pPlayer->m_bIsPowerSliding && m_pPlayer->m_bUsedSlideBoost && !velocity.IsZero() &&
+                                   velocity.IsLengthGreaterThan(0.85f * slideJumpSpeed) &&
+                                   velocity.IsLengthLessThan(slideJumpSpeed);
+
+        if (bRoundUpSpeed)
+        {
+            const float scale = slideJumpSpeed / mv->m_vecVelocity.Length2D();
+            mv->m_vecVelocity.x *= scale;
+            mv->m_vecVelocity.y *= scale;
+        }
+
         const bool bCoyoteWallJump = bCoyoteJump && m_pPlayer->m_flWallrunFallAwayTime != 0.0f;
         if (m_pPlayer->m_bIsWallrunning || bCoyoteWallJump)
         {
@@ -3355,6 +3369,7 @@ void CMomentumGameMovement::CheckPowerSlide()
         return;
 
     m_pPlayer->m_bIsPowerSliding = true;
+    m_pPlayer->m_bUsedSlideBoost = false;
     m_pPlayer->m_flLastSlideBoost = 0.0f;
 
     // boost speed toward the goal speed but not over
@@ -3372,6 +3387,7 @@ void CMomentumGameMovement::CheckPowerSlide()
             VectorScale(mv->m_vecVelocity, newSpeed / speed, mv->m_vecVelocity);
         }
         
+        m_pPlayer->m_bUsedSlideBoost = true;
         m_pPlayer->m_bDoFOVScale = true;
     }
     player->m_Local.m_slideBoostCooldown = sv_pk_slide_boost_cooldown.GetFloat() * 1000.f;

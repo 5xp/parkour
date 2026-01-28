@@ -85,6 +85,7 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_bIsPowerSliding = false;
     m_flLastSlideBoost = 0.0f;
     m_bDoFOVScale = false;
+    m_bUsedSlideBoost = false;
     m_flFOVScaleFrac = 0.0f;
     m_flSprintTiltFrac = 0.0f;
     m_flSprintTiltVelocity = 0.0f;

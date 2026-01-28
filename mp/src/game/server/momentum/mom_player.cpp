@@ -264,6 +264,7 @@ CMomentumPlayer::CMomentumPlayer()
     m_bIsPowerSliding = false;
     m_flLastSlideBoost = 0.0f;
     m_bDoFOVScale = false;
+    m_bUsedSlideBoost = false;
 
     m_iAirJumps = 0;
     m_flJumpBufferTime = 0.0f;

@@ -278,6 +278,12 @@ sv_pk_slide_max_stop_speed(
 	FCVAR_NOTIFY | FCVAR_REPLICATED,    
 	"Slide may not end while speed is above this.");
 ConVar
+sv_pk_slide_max_jump_speed(
+	"sv_pk_slide_max_jump_speed",
+	"350.0",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Jumping out of a slideboost will increase horizontal speed to this if speed > 0.85x this.");
+ConVar
 sv_pk_slide_want_to_stop_decel(
 	"sv_pk_slide_want_to_stop_decel", 
 	"400.0",

@@ -299,6 +299,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     float m_flStickySprintExpire;
     CNetworkVar(bool, m_bIsPowerSliding);
     CNetworkVar(bool, m_bDoFOVScale);
+    bool m_bUsedSlideBoost;
     float m_flLastSlideBoost;
 
     int m_iAirJumps;

@@ -75,6 +75,7 @@ extern ConVar sv_pk_lurch_max;
 extern ConVar sv_pk_slide_required_start_speed;
 extern ConVar sv_pk_slide_stop_speed;
 extern ConVar sv_pk_slide_max_stop_speed;
+extern ConVar sv_pk_slide_max_jump_speed;
 extern ConVar sv_pk_slide_want_to_stop_decel;
 extern ConVar sv_pk_slide_max_angle_dot;
 extern ConVar sv_pk_slide_speed_boost;
