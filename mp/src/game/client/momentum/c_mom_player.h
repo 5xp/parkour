@@ -105,6 +105,7 @@ public:
                               Vector &tiltVec) const;
     
     // Mobility sound functions
+    void UpdateStepSound(surfacedata_t *psurface, const Vector &vecOrigin, const Vector &vecVelocity) override;
     void PlayStepSound(const Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force) override;
     virtual void PlayAirjumpSound(const Vector &vecOrigin);
     virtual void PlayPowerSlideSound(const Vector &vecOrigin);
@@ -143,6 +144,7 @@ private:
     CNetworkVector(m_vecWallNormal);
     Vector m_vecTargetWallNormal;
     Vector m_vecLastWallNormal;
+    int m_nWallrunSurfaceProp;
     Vector m_vecLastWallrunStartPos;
     CNetworkVar(float, m_flWallrunRelativeYaw);
     CNetworkVar(float, m_flWallrunRelativeCorrectSpeed);

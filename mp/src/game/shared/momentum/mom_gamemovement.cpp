@@ -1526,6 +1526,8 @@ bool CMomentumGameMovement::CheckJumpButton()
     const bool bInAir = (player->GetGroundEntity() == nullptr);
     bool bDoAirJump = false;
     const bool bParkour = g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR);
+    const bool bCoyoteWallJump = bParkour && bCoyoteJump && m_pPlayer->m_flWallrunFallAwayTime != 0.0f;
+    const bool bDoWallJump = m_pPlayer->m_bIsWallrunning || bCoyoteWallJump;
 
     if (bParkour && bJustPressedJump && bInAir && !bCoyoteJump && !m_pPlayer->m_bIsWallrunning)
         m_pPlayer->m_flJumpBufferTime = gpGlobals->curtime + sv_pk_jump_buffer_ticks.GetInt() * gpGlobals->interval_per_tick;
@@ -1618,7 +1620,13 @@ bool CMomentumGameMovement::CheckJumpButton()
     }
     else
     {
-        player->PlayStepSound(mv->GetAbsOrigin(), player->m_pSurfaceData, 1.0, true);
+        surfacedata_t *pJumpSurface = player->m_pSurfaceData;
+        if (bParkour && (m_pPlayer->m_bIsWallrunning || bCoyoteWallJump))
+        {
+            pJumpSurface = physprops->GetSurfaceData(m_pPlayer->m_nWallrunSurfaceProp);
+        }
+
+        player->PlayStepSound(mv->GetAbsOrigin(), pJumpSurface, 1.0, true);
     }
 
     // MoveHelper()->PlayerSetAnimation( PLAYER_JUMP );
@@ -1662,7 +1670,6 @@ bool CMomentumGameMovement::CheckJumpButton()
             mv->m_vecVelocity.y *= scale;
         }
 
-        const bool bCoyoteWallJump = bCoyoteJump && m_pPlayer->m_flWallrunFallAwayTime != 0.0f;
         if (m_pPlayer->m_bIsWallrunning || bCoyoteWallJump)
         {
             EndWallRun();
@@ -3621,6 +3628,15 @@ void CMomentumGameMovement::OnWallTouch(Vector &vecWallNormal, trace_t &pm)
     m_pPlayer->DeriveMaxSpeed();
 #endif
 
+    trace_t wallTrace;
+    const Vector wallTraceStart = mv->GetAbsOrigin();
+    const Vector wallTraceEnd = wallTraceStart - vecWallNormal * 32.0f;
+    UTIL_TraceLine(wallTraceStart, wallTraceEnd, MASK_SOLID_BRUSHONLY, player, COLLISION_GROUP_NONE, &wallTrace);
+    if (!wallTrace.startsolid && !wallTrace.allsolid && wallTrace.fraction < 1.0f)
+    {
+        m_pPlayer->m_nWallrunSurfaceProp = wallTrace.surface.surfaceProps;
+    }
+
     // If we've jumped since landing on the ground or touching the wall, give a boost
     const float upWallBoost = sv_pk_wallrun_upwallboost.GetFloat();
     if (m_pPlayer->m_bWallrunHasBoost)
@@ -3736,6 +3752,7 @@ void CMomentumGameMovement::StayOnWall()
 
     if (tr.fraction < 1.0f && tr.plane.normal.z < 0.7f)
     {
+        m_pPlayer->m_nWallrunSurfaceProp = tr.surface.surfaceProps;
         const Vector newTarget = tr.plane.normal;
         if (newTarget.Dot(m_pPlayer->m_vecTargetWallNormal) < 0.999f)
         {

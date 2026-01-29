@@ -104,6 +104,7 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_vecWallNormal.Init();
     m_vecTargetWallNormal.Init();
     m_vecLastWallNormal.Init();
+    m_nWallrunSurfaceProp = 0;
     m_vecLastWallrunStartPos.Init();
     m_flWallrunRelativeYaw = 0.0f;
     m_flWallrunRelativeCorrectSpeed = 0.0f;

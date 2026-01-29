@@ -462,7 +462,112 @@ void CMomentumPlayer::PlayStepSound(const Vector &vecOrigin, surfacedata_t *psur
     if (m_bIsPowerSliding)
         return;
 
+    if (m_bIsWallrunning && m_nWallrunSurfaceProp >= 0)
+    {
+        IPhysicsSurfaceProps *pPhysprops = MoveHelper()->GetSurfaceProps();
+        if (pPhysprops)
+        {
+            surfacedata_t *pWallSurface = pPhysprops->GetSurfaceData(m_nWallrunSurfaceProp);
+            if (pWallSurface)
+                psurface = pWallSurface;
+        }
+    }
+
     BaseClass::PlayStepSound(vecOrigin, psurface, fvol, force);
+}
+
+void CMomentumPlayer::UpdateStepSound(surfacedata_t *psurface, const Vector &vecOrigin, const Vector &vecVelocity)
+{
+    if (!m_bIsWallrunning)
+    {
+        BaseClass::UpdateStepSound(psurface, vecOrigin, vecVelocity);
+        return;
+    }
+
+    if (m_nWallrunSurfaceProp >= 0)
+    {
+        IPhysicsSurfaceProps *pPhysprops = MoveHelper()->GetSurfaceProps();
+        if (pPhysprops)
+        {
+            psurface = pPhysprops->GetSurfaceData(m_nWallrunSurfaceProp);
+        }
+    }
+
+    if (m_flStepSoundTime > 0)
+    {
+        m_flStepSoundTime -= 1000.0f * gpGlobals->frametime;
+        if (m_flStepSoundTime < 0)
+        {
+            m_flStepSoundTime = 0;
+        }
+    }
+
+    if (m_flStepSoundTime > 0)
+        return;
+
+    if (GetFlags() & (FL_FROZEN | FL_ATCONTROLS))
+        return;
+
+    if (GetMoveType() == MOVETYPE_NOCLIP || GetMoveType() == MOVETYPE_OBSERVER)
+        return;
+
+    if (!sv_footsteps.GetFloat())
+        return;
+
+    const float speed = VectorLength(vecVelocity);
+    const float groundspeed = Vector2DLength(vecVelocity.AsVector2D());
+    float velrun;
+    float velwalk;
+
+    GetStepSoundVelocities(&velwalk, &velrun);
+
+    const bool movingalongground = (groundspeed > 0.0001f);
+    const bool moving_fast_enough = (speed >= velwalk);
+    if (!moving_fast_enough || !movingalongground)
+        return;
+
+    const bool bWalking = speed < velrun;
+    if (!psurface)
+        return;
+
+    SetStepSoundTime(STEPSOUNDTIME_NORMAL, bWalking);
+
+    float fvol;
+    switch (psurface->game.material)
+    {
+    default:
+    case CHAR_TEX_CONCRETE:
+        fvol = bWalking ? 0.2f : 0.5f;
+        break;
+
+    case CHAR_TEX_METAL:
+        fvol = bWalking ? 0.2f : 0.5f;
+        break;
+
+    case CHAR_TEX_DIRT:
+        fvol = bWalking ? 0.25f : 0.55f;
+        break;
+
+    case CHAR_TEX_VENT:
+        fvol = bWalking ? 0.4f : 0.7f;
+        break;
+
+    case CHAR_TEX_GRATE:
+        fvol = bWalking ? 0.2f : 0.5f;
+        break;
+
+    case CHAR_TEX_TILE:
+        fvol = bWalking ? 0.2f : 0.5f;
+        break;
+
+    case CHAR_TEX_SLOSH:
+        fvol = bWalking ? 0.2f : 0.5f;
+        break;
+    }
+
+    fvol *= 0.4f; // Wallrunning is quieter
+
+    PlayStepSound(vecOrigin, psurface, fvol, false);
 }
 
 void CMomentumPlayer::PlayAirjumpSound(const Vector &vecOrigin)
