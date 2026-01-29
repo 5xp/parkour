@@ -3720,7 +3720,7 @@ void CMomentumGameMovement::CheckShouldWallrunEnd()
     if (!m_pPlayer->m_bIsWallrunning)
         return;
 
-    if (mv->m_nButtons & IN_DUCK)
+    if (player->m_nButtons & IN_DUCK)
     {
         FallAwayFromWall(false);
         return;
