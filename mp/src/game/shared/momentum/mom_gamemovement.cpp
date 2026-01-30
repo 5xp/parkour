@@ -3683,15 +3683,21 @@ void CMomentumGameMovement::PredictWallrun()
     if (!g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
         return;
 
-    if (player->GetMoveType() == MOVETYPE_NOCLIP)
-        return;
-
     if (m_pPlayer->m_bIsWallrunning)
         return;
 
     m_pPlayer->m_vecWallNormal.Init();
 
+    if (player->GetMoveType() == MOVETYPE_NOCLIP)
+        return;
+
     if (player->GetGroundEntity() != nullptr)
+        return;
+
+    if (player->GetWaterLevel() > WL_NotInWater)
+        return;
+
+    if (player->pl.deadflag)
         return;
 
     const float predictTime = sv_pk_wallrun_viewtilt_predict_time.GetFloat();
@@ -4057,6 +4063,15 @@ void CMomentumGameMovement::EndWallRun()
 
 void CMomentumGameMovement::OnLand(bool fromWallrun)
 {
+    if (!g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+        return;
+
+    if (player->GetMoveType() == MOVETYPE_NOCLIP)
+        return;
+
+    if (player->pl.deadflag)
+        return;
+
     if (!fromWallrun)
         EndWallRun();
 
