@@ -326,10 +326,12 @@ void CMomentumPlayer::Precache()
     PrecacheScriptSound(SND_FLASHLIGHT_OFF);
     PrecacheScriptSound(SND_SPRINT);
     PrecacheScriptSound(SND_PAINT_SHOT);
-
-    PrecacheScriptSound("Player.AirJump");
-    m_hssPowerSlideSound = PrecacheScriptSound("Player.PowerSlide");
-    m_hssWallRunSound = PrecacheScriptSound("Player.WallRun");
+     
+    PrecacheScriptSound("MomPlayer.AirJump");
+    PrecacheScriptSound("MomPlayer.AirJumpFail");
+    PrecacheScriptSound("MomPlayer.WallrunStart");
+    PrecacheScriptSound("MomPlayer.SlideStart");
+    PrecacheScriptSound("MomPlayer.SlideStop");
 
     BaseClass::Precache();
 }

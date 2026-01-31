@@ -287,11 +287,11 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     // Mobility mod (parkour)
     void UpdateStepSound(surfacedata_t *psurface, const Vector &vecOrigin, const Vector &vecVelocity) override;
     void PlayStepSound(const Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force) override;
-    virtual void PlayAirjumpSound(const Vector &vecOrigin);
-    virtual void PlayPowerSlideSound(const Vector &vecOrigin);
-    virtual void StopPowerSlideSound();
-    virtual void PlayWallRunSound(const Vector &vecOrigin);
-    virtual void StopWallRunSound();
+    virtual void PlayAirJumpSound(const Vector &vecOrigin, bool fail);
+    virtual void PlaySlideStartSound(const Vector &vecOrigin);
+    virtual void PlaySlideStopSound(const Vector &vecOrigin);
+    virtual void PlayWallrunSound(const Vector &vecOrigin);
+    virtual void StopWallrunSound();
     float CalcSlideViewRoll(const QAngle &eyeAngles, const Vector &velocity, bool isPowerSliding, Vector &tiltVec) const;
     float CalcWallrunViewRoll(const QAngle &eyeAngles, bool isWallrunning, float wallrunStartTime, const Vector &wallNormal,
                               Vector &tiltVec) const;
@@ -321,9 +321,6 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     Vector m_vecLastWallrunStartPos;
     CNetworkVar(float, m_flWallrunRelativeYaw);
     CNetworkVar(float, m_flWallrunRelativeCorrectSpeed);
-
-    HSOUNDSCRIPTHANDLE m_hssPowerSlideSound;
-    HSOUNDSCRIPTHANDLE m_hssWallRunSound;
 
     // When a wallrun ends or we go over a cliff, allow a window when
     // jumping counts as a normal jump off the ground/wall, even though

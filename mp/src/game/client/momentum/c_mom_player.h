@@ -107,11 +107,11 @@ public:
     // Mobility sound functions
     void UpdateStepSound(surfacedata_t *psurface, const Vector &vecOrigin, const Vector &vecVelocity) override;
     void PlayStepSound(const Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force) override;
-    virtual void PlayAirjumpSound(const Vector &vecOrigin);
-    virtual void PlayPowerSlideSound(const Vector &vecOrigin);
-    virtual void StopPowerSlideSound();
-    virtual void PlayWallRunSound(const Vector &vecOrigin);
-    virtual void StopWallRunSound();
+    virtual void PlayAirJumpSound(const Vector &vecOrigin, bool fail);
+    virtual void PlaySlideStartSound(const Vector &vecOrigin);
+    virtual void PlaySlideStopSound(const Vector &vecOrigin);
+    virtual void PlayWallrunSound(const Vector &vecOrigin);
+    virtual void StopWallrunSound();
 private:
     void ApplySprintViewTilt(QAngle &eyeAngles);
     void ApplySlideViewTilt(QAngle &eyeAngles);
@@ -152,9 +152,6 @@ private:
     float m_flWallrunRelativeYawNetPrev;
     bool m_bWallrunRelativeYawInit;
     
-    HSOUNDSCRIPTHANDLE m_hssPowerSlideSound;
-    HSOUNDSCRIPTHANDLE m_hssWallRunSound;
-
     // When a wallrun ends or we go over a cliff, allow a window when
     // jumping counts as a normal jump off the ground/wall, even though
     // technically airborn. Compensating for player's perception/reflexes.

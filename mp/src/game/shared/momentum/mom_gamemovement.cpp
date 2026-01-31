@@ -1581,6 +1581,7 @@ bool CMomentumGameMovement::CheckJumpButton()
         }
         else
         {
+            m_pPlayer->PlayAirJumpSound(mv->GetAbsOrigin(), true);
             return false;
         }
     }
@@ -1616,7 +1617,7 @@ bool CMomentumGameMovement::CheckJumpButton()
     // Play different sound for air jump
     if (bDoAirJump)
     {
-        m_pPlayer->PlayAirjumpSound(mv->GetAbsOrigin()); // softer
+        m_pPlayer->PlayAirJumpSound(mv->GetAbsOrigin(), false); // softer
     }
     else
     {
@@ -3201,6 +3202,10 @@ void CMomentumGameMovement::SetGroundEntity(const trace_t *pm)
     {
         if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
         {
+            // We're in the air now, so stop playing the sliding sound
+            if (m_pPlayer->m_bIsPowerSliding)
+                m_pPlayer->PlaySlideStopSound(mv->GetAbsOrigin());
+
             // mobility - make sure can airjump after walking off ledge
             if (!(mv->m_nButtons & IN_JUMP))
             {
@@ -3399,7 +3404,7 @@ void CMomentumGameMovement::CheckPowerSlide()
     }
     player->m_Local.m_slideBoostCooldown = sv_pk_slide_boost_cooldown.GetFloat() * 1000.f;
 
-    m_pPlayer->PlayPowerSlideSound(mv->GetAbsOrigin());
+    m_pPlayer->PlaySlideStartSound(mv->GetAbsOrigin());
 
     // Workaround for bug - if they slide, then jump, then slide on landing
     // the view stays at standing height from the second time onwards.
@@ -3424,7 +3429,11 @@ void CMomentumGameMovement::CheckPowerSlide()
 void CMomentumGameMovement::EndPowerSlide()
 {
     m_pPlayer->m_bIsPowerSliding = false;
-    m_pPlayer->StopPowerSlideSound();
+
+    if (player->GetGroundEntity() != nullptr)
+    {
+        m_pPlayer->PlaySlideStopSound(mv->GetAbsOrigin());
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -3624,6 +3633,7 @@ void CMomentumGameMovement::OnWallTouch(Vector &vecWallNormal, trace_t &pm)
     m_pPlayer->m_bHasLastWallrunStartPos = true;
     m_pPlayer->m_flWallrunRelativeYaw = 0.0f;
     m_pPlayer->m_flWallrunRelativeCorrectSpeed = 0.0f;
+    m_pPlayer->PlayWallrunSound(mv->GetAbsOrigin());
 #ifdef GAME_DLL
     m_pPlayer->DeriveMaxSpeed();
 #endif
@@ -4083,6 +4093,7 @@ void CMomentumGameMovement::OnLand(bool fromWallrun)
         m_pPlayer->m_bWallrunHasBoost = false;
         m_pPlayer->m_bHasLastWallrunStartPos = false;
         m_pPlayer->m_flWallrunFallAwayTime = 0.0f;
+        player->PlayStepSound(mv->GetAbsOrigin(), player->m_pSurfaceData, 0.5f, true);
     }
 
     const float fallSpeed = player->m_Local.m_flFallVelocity;

@@ -57,3 +57,58 @@
     
     "wave" "paint/paint_shot.wav"
 }
+
+// "MomPlayer.AirJump"
+// {
+//     "channel" "CHAN_STATIC"
+//     "volume" "0.25"
+//     "pitch" "120, 130"
+//     "rndwave"
+//     {
+//     }
+// }
+
+"MomPlayer.AirJumpFail"
+{
+    "channel" "CHAN_STATIC"
+    "volume" "0.25"
+    "pitch" "120, 130"
+    "rndwave"
+    {
+        "wave" "weapons/physcannon/physcannon_dryfire.wav"
+    }
+}
+
+"MomPlayer.WallrunStart"
+{
+    "channel" "CHAN_STATIC"
+    "volume" "0.2"
+    "pitch" "110, 120"
+    "rndwave"
+    {
+        "wave" "physics/flesh/flesh_impact_hard1.wav"
+        "wave" "physics/flesh/flesh_impact_hard2.wav"
+        "wave" "physics/flesh/flesh_impact_hard3.wav"
+        "wave" "physics/flesh/flesh_impact_hard5.wav"
+    }
+}
+
+"MomPlayer.SlideStart"
+{
+    "channel" "CHAN_AUTO"
+    "volume" "0.2"
+    "pitch" "110, 120"
+    "rndwave"
+    {
+        "wave" "physics/body/body_medium_scrape_smooth_loop1.wav"
+    }
+}
+
+// "MomPlayer.SlideStop"
+// {
+//     "channel" "CHAN_STATIC"
+//     "volume" "0.1"
+//     "rndwave"
+//     {
+//     }
+// }
