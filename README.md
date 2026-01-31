@@ -4,22 +4,25 @@
 
 ## What is this?
 
-This is a WIP fork of [Momentum Mod](https://momentum-mod.org/), aiming to faithfully recreate Titanfall 2 movement for the Parkour gamemode.
+This is a WIP fork of [Momentum Mod 0.8.7](https://momentum-mod.org/), aiming to faithfully recreate Titanfall 2 movement for the Parkour gamemode.
 
 ## How do I install this?
 
+> [!IMPORTANT]
+> This project only works with the 0.8.7 public build of Momentum Mod. It is not compatible with the Steam version.
+
 For Windows users:
 
-1. Download and install the 0.8.7 public build of Momentum Mod: https://github.com/momentum-mod/game/releases/tag/0.8.7-public-eval
+1. Download the 0.8.7 public build of Momentum Mod: https://github.com/momentum-mod/game/releases/tag/0.8.7-public-eval
 2. Download the latest release: https://github.com/5xp/parkour/releases
-3. Extract `mom-pk-XXXX-XX-XX.zip` into the root of your 0.8.7 installation (where hl2.exe is).
+3. Extract the contents of `mom-pk-XXXX-XX-XX.zip` into the root of your 0.8.7 installation (where hl2.exe is) and allow it to overwrite files.
 4. Launch the game by opening `run_momentum.bat`.
 
 ## Notes
 
 - Default tickrate is 128 for Parkour.
-- Make sure `mom_enable_overlapping_keys` is set to `1`. Leaving it at 0 enables last input priority, which prevents lurchless tech.
-- Try the jump buffer system with `sv_pk_jump_buffer_ticks 1`.
+- `mom_gamemode_override 8` will force Parkour gamemode on non-parkour maps.
+- Try the jump buffer system with `sv_pk_jump_buffer_ticks 1`. This allows you to walljump if you press jump up to 1 tick before hitting the wall.
 
 ## Other info
 
