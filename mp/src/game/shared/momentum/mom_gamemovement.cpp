@@ -300,7 +300,8 @@ void CMomentumGameMovement::WalkMove()
         wishspeed = mv->m_flMaxSpeed;
     }
 
-    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR) && ((mv->m_nButtons & IN_DUCK) || (player->GetFlags() & FL_DUCKING)))
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR) &&
+        (mv->m_nButtons & IN_DUCK || (m_pPlayer->m_Local.m_bDucked || m_pPlayer->m_Local.m_bDucking) && !CanUnduck()))
     {
         wishspeed = PK_CROUCH_SPEED;
     }
@@ -777,10 +778,10 @@ bool CMomentumGameMovement::LadderMove()
 
 void CMomentumGameMovement::HandleDuckingSpeedCrop()
 {
-    if (m_pPlayer->m_bIsPowerSliding)
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
         return;
 
-    if (g_pGameModeSystem->IsTF2BasedMode() || g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP) || g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR))
+    if (g_pGameModeSystem->IsTF2BasedMode() || g_pGameModeSystem->GameModeIs(GAMEMODE_AHOP))
     {
         return BaseClass::HandleDuckingSpeedCrop();
     }
@@ -870,7 +871,7 @@ void CMomentumGameMovement::Friction()
             wishspeed = mv->m_flMaxSpeed;
         }
 
-        if ((mv->m_nButtons & IN_DUCK) || (player->GetFlags() & FL_DUCKING))
+        if (mv->m_nButtons & IN_DUCK || (m_pPlayer->m_Local.m_bDucked || m_pPlayer->m_Local.m_bDucking) && !CanUnduck())
         {
             wishspeed = PK_CROUCH_SPEED;
         }
