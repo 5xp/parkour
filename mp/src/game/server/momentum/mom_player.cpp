@@ -229,6 +229,7 @@ CMomentumPlayer::CMomentumPlayer()
     m_vecRampBoardVel.Init();
     m_vecRampLeaveVel.Init();
     m_bAllowUserTeleports = true;
+    m_bJustTeleported = false;
     m_flPunishTime = -1;
     m_iLastBlock = -1;
     m_iOldTrack = 0;
@@ -993,6 +994,7 @@ void CMomentumPlayer::Teleport(const Vector *newPosition, const QAngle *newAngle
         return;
 
     // No need to remove the trail here, CreateTrail() already does it for us
+    m_bJustTeleported = true;
     BaseClass::Teleport(newPosition, newAngles, newVelocity);
     PhysicsCheckForEntityUntouch();
     CreateTrail();
@@ -1016,8 +1018,7 @@ bool CMomentumPlayer::KeyValue(const char *szKeyName, const char *szValue)
         // calling SetLocalOrigin from within a KeyValues method.. use SetAbsOrigin instead!
         Assert((GetMoveParent() == NULL) && !IsEFlagSet(EFL_DIRTY_ABSTRANSFORM));
         SetAbsOrigin(vecOrigin);
-
-
+        m_bJustTeleported = true;
 
         // TODO: Throw this into OnTeleport() or something?
         CreateTrail();

@@ -612,6 +612,7 @@ void CMomentumPlayer::PlaySlideStartSound(const Vector &vecOrigin)
     }
 #endif
 
+    StopSound("MomPlayer.SlideStart");
     EmitSound(filter, entindex(), "MomPlayer.SlideStart");
 }
 

@@ -166,6 +166,7 @@ private:
     SurfInt::Type m_surfIntHistory[SurfInt::TYPE_COUNT]; // Keeps track of the history of interactions
 
     float m_flStamina;
+    bool m_bJustTeleported;
 
     CMomRunEntity *m_pSpecTarget;
 

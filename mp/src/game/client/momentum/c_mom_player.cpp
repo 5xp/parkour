@@ -72,6 +72,7 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_flEndSpeed = 0.0f;
     m_flStamina = 0.0f;
     m_flGrabbableLadderTime = 0.0f;
+    m_bJustTeleported = false;
 
     m_iLandTick = 0;
     m_iJumpTick = 0;

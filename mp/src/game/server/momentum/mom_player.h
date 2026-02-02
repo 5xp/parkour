@@ -388,6 +388,7 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     float m_flStamina;
 
     bool m_bAllowUserTeleports;
+    bool m_bJustTeleported;
 
     // Ladder stuff
     float m_flGrabbableLadderTime;

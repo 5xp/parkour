@@ -3190,7 +3190,7 @@ void CMomentumGameMovement::SetGroundEntity(const trace_t *pm)
         
 
     bool bLanded = false;
-    if (player->GetGroundEntity() == nullptr && (pm && pm->m_pEnt))
+    if (!m_pPlayer->m_bJustTeleported && player->GetGroundEntity() == nullptr && (pm && pm->m_pEnt))
     {
         bLanded = true;
 
@@ -3234,6 +3234,11 @@ void CMomentumGameMovement::SetGroundEntity(const trace_t *pm)
     }
 
     BaseClass::SetGroundEntity(pm);
+
+    if (m_pPlayer->m_bJustTeleported)
+    {
+        m_pPlayer->m_bJustTeleported = false;
+    }
 
     if (pm && pm->m_pEnt)
     {
