@@ -96,6 +96,7 @@ extern ConVar sv_pk_slide_viewtilt_player_speed;
 extern ConVar sv_pk_wallrun_jump_upspeed;
 extern ConVar sv_pk_wallrun_jump_outwardspeed;
 extern ConVar sv_pk_wallrun_jump_inputdirspeed;
+extern ConVar sv_pk_wallrun_crouch_jump_buffer;
 extern ConVar sv_pk_wallrun_timelimit;
 extern ConVar sv_pk_wallrun_out_time;
 extern ConVar sv_pk_wallrun_upwallboost;

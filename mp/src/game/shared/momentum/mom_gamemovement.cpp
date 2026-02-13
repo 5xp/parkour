@@ -992,7 +992,22 @@ void CMomentumGameMovement::Duck()
     int buttonsPressed = buttonsChanged & mv->m_nButtons;      // The changed ones still down are "pressed"
     int buttonsReleased = buttonsChanged & mv->m_nOldButtons; // The changed ones which were previously down are "released"
 
-   
+    if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR) && (buttonsPressed & IN_DUCK))
+    {
+        m_pPlayer->m_iDuckTick = gpGlobals->tickcount;
+
+        const int crouchJumpBuffer = sv_pk_wallrun_crouch_jump_buffer.GetInt();
+        if (crouchJumpBuffer > 0 && player->GetGroundEntity() == nullptr &&
+            m_pPlayer->m_iWallJumpTick >= 0 && !m_pPlayer->m_bWallJumpIsBuffered)
+        {
+            const int ticksSinceJump = gpGlobals->tickcount - m_pPlayer->m_iWallJumpTick;
+            if (ticksSinceJump >= 0 && ticksSinceJump <= crouchJumpBuffer)
+            {
+                FallAwayFromWall(true);
+            }
+        }
+    }
+
     if (mv->m_nButtons & IN_DUCK)
     {
         mv->m_nOldButtons |= IN_DUCK;
@@ -1410,7 +1425,9 @@ bool CMomentumGameMovement::ShouldDoBufferedJump()
     if (!IsJumpBufferActive())
         return false;
 
-    return (player->GetGroundEntity() != nullptr) || m_pPlayer->m_bIsWallrunning;
+    const bool bCoyoteWallJump = (gpGlobals->curtime <= m_pPlayer->m_flCoyoteTime) &&
+                                 (m_pPlayer->m_flWallrunFallAwayTime != 0.0f);
+    return (player->GetGroundEntity() != nullptr) || m_pPlayer->m_bIsWallrunning || bCoyoteWallJump;
 }
 
 bool CMomentumGameMovement::PredictGroundTouch(float predictTime, trace_t *outTrace)
@@ -1572,7 +1589,15 @@ bool CMomentumGameMovement::CheckJumpButton()
         {
             // Buffered jumping: Don't airjump if we're about to hit the ground or a wall
             const float bufferTime = sv_pk_jump_buffer_ticks.GetInt() * gpGlobals->interval_per_tick;
-            if (PredictGroundTouch(bufferTime) || PredictWallTouch(bufferTime))
+            const bool bWillTouchGround = PredictGroundTouch(bufferTime);
+            const bool bWillTouchWall = PredictWallTouch(bufferTime);
+            if (bWillTouchWall)
+            {
+                m_pPlayer->m_iWallJumpTick = gpGlobals->tickcount;
+                m_pPlayer->m_bWallJumpIsBuffered = true;
+            }
+
+            if (bWillTouchGround || bWillTouchWall)
                 return false;
         }
 
@@ -1672,10 +1697,15 @@ bool CMomentumGameMovement::CheckJumpButton()
             mv->m_vecVelocity.y *= scale;
         }
 
-        if (m_pPlayer->m_bIsWallrunning || bCoyoteWallJump)
+        if (bDoWallJump)
         {
             EndWallRun();
             DoWallJump();
+            m_pPlayer->m_bWallJumpIsBuffered = false;
+            if (bJustPressedJump)
+            {
+                m_pPlayer->m_iWallJumpTick = gpGlobals->tickcount;
+            }
         }
         else if (bDoAirJump)
         {
@@ -3628,6 +3658,14 @@ void CMomentumGameMovement::OnWallTouch(Vector &vecWallNormal, trace_t &pm)
 
     OnLand(true);
 
+    const bool bHasBufferedJump = IsJumpBufferActive();
+    const bool bHoldingJump = (mv->m_nButtons & IN_JUMP) != 0;
+    if (!bHasBufferedJump && !bHoldingJump)
+    {
+        m_pPlayer->m_iWallJumpTick = -1;
+        m_pPlayer->m_bWallJumpIsBuffered = false;
+    }
+
     m_pPlayer->m_bIsWallrunning = true;
     m_pPlayer->m_flWallrunStartTime = gpGlobals->curtime;
     m_pPlayer->m_flWallrunFallAwayTime = 0.0f;
@@ -3727,14 +3765,47 @@ void CMomentumGameMovement::PredictWallrun()
     m_pPlayer->m_vecWallNormal = wallNormal;
 }
 
-void CMomentumGameMovement::FallAwayFromWall(const bool giveCoyoteTime)
+void CMomentumGameMovement::FallAwayFromWall(const bool fromCrouch)
 {
+    // We already fell away from the wall
+    if (m_pPlayer->m_flWallrunFallAwayTime != 0)
+        return;
+
     EndWallRun();
     mv->m_vecVelocity += m_pPlayer->m_vecLastWallNormal * sv_pk_wallrun_fallawayspeed.GetFloat();
-
     m_pPlayer->m_flWallrunFallAwayTime = gpGlobals->curtime;
-    m_pPlayer->m_flCoyoteTime =
-        gpGlobals->curtime + (giveCoyoteTime ? sv_pk_coyote_time.GetFloat() : 0.0f);
+
+    float coyoteTime = sv_pk_coyote_time.GetFloat();
+    if (fromCrouch)
+    {
+        const int crouchJumpBuffer = sv_pk_wallrun_crouch_jump_buffer.GetInt();
+        if (crouchJumpBuffer < 0)
+        {
+            m_pPlayer->m_flCoyoteTime = 0.0f;
+            return;
+        }
+
+        const int duckTick = m_pPlayer->m_iDuckTick;
+        const int jumpTick = m_pPlayer->m_iWallJumpTick;
+        if (crouchJumpBuffer >= 0 && jumpTick >= 0 && duckTick > jumpTick &&
+            !m_pPlayer->m_bWallJumpIsBuffered)
+        {
+            const int ticksSinceJump = duckTick - jumpTick;
+            if (ticksSinceJump <= crouchJumpBuffer)
+            {
+                m_pPlayer->m_flCoyoteTime = 0.0f;
+                return;
+            }
+        }
+
+        if (crouchJumpBuffer >= 0 && duckTick >= 0)
+        {
+            const int ticksSinceDuck = gpGlobals->tickcount - duckTick;
+            const int remainingTicks = crouchJumpBuffer - ticksSinceDuck;
+            coyoteTime = remainingTicks * gpGlobals->interval_per_tick;
+        }
+    }
+    m_pPlayer->m_flCoyoteTime = gpGlobals->curtime + coyoteTime;
 }
 
 void CMomentumGameMovement::CheckShouldWallrunEnd()
@@ -3744,7 +3815,7 @@ void CMomentumGameMovement::CheckShouldWallrunEnd()
 
     if (player->m_nButtons & IN_DUCK)
     {
-        FallAwayFromWall(false);
+        FallAwayFromWall(true);
         return;
     }
 
@@ -3752,14 +3823,14 @@ void CMomentumGameMovement::CheckShouldWallrunEnd()
     if (wallrunTime > sv_pk_wallrun_timelimit.GetFloat())
     {
         player->m_Local.m_vecPunchAngleVel += -SampleViewPunch(ViewPunchEvent::JUMP) * PK_VIEWPUNCH_SCALE;
-        FallAwayFromWall(true);
+        FallAwayFromWall(false);
         return;
     }
 
     const float pushAwayTime = gpGlobals->curtime - m_pPlayer->m_flWallrunPushAwayTime;
     if (m_pPlayer->m_flWallrunPushAwayTime != 0.0f && pushAwayTime > sv_pk_wallrun_pushaway_fallofftime.GetFloat())
     {
-        FallAwayFromWall(true);
+        FallAwayFromWall(false);
     }
 }
 
@@ -3800,7 +3871,7 @@ void CMomentumGameMovement::StayOnWall()
 
     if (!CanFeetReachWall(mv->GetAbsOrigin(), m_pPlayer->m_vecWallNormal))
     {
-        FallAwayFromWall(true);
+        FallAwayFromWall(false);
     }
 
     if (mv->m_vecVelocity.z > 0.0f && IsNearTopWall(mv->GetAbsOrigin(), m_pPlayer->m_vecWallNormal))
@@ -4099,6 +4170,7 @@ void CMomentumGameMovement::OnLand(bool fromWallrun)
         m_pPlayer->m_bWallrunHasBoost = false;
         m_pPlayer->m_bHasLastWallrunStartPos = false;
         m_pPlayer->m_flWallrunFallAwayTime = 0.0f;
+        m_pPlayer->m_iWallJumpTick = -1;
         player->PlayStepSound(mv->GetAbsOrigin(), player->m_pSurfaceData, 0.5f, true);
     }
 

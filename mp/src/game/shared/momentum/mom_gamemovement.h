@@ -130,7 +130,7 @@ private:
     bool PredictGroundTouch(float predictTime, trace_t *outTrace = nullptr);
     bool PredictWallTouch(float predictTime, Vector *outNormal = nullptr);
 
-    void FallAwayFromWall(const bool giveCoyoteTime);
+    void FallAwayFromWall(const bool fromCrouch);
     void CheckShouldWallrunEnd();
     bool CanFeetReachWall(const Vector &position, const Vector &wallNormal);
     bool IsNearTopWall(const Vector &position, const Vector &wallNormal);

@@ -133,6 +133,9 @@ private:
     float m_flJumpBufferTime;
     bool CanAirJump() const { return m_iAirJumps > 0; }
 
+    int m_iWallJumpTick;
+    int m_iDuckTick;
+    bool m_bWallJumpIsBuffered;
     CNetworkVar(bool, m_bIsWallrunning);
     CNetworkVar(float, m_flWallrunStartTime);
     float m_flWallrunFallAwayTime;

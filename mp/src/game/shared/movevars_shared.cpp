@@ -404,6 +404,12 @@ sv_pk_wallrun_jump_inputdirspeed(
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Speed achieved in the direction of input from walljumping.");
 ConVar
+sv_pk_wallrun_crouch_jump_buffer(
+	"sv_pk_wallrun_crouch_jump_buffer",
+	"1",
+	FCVAR_NOTIFY | FCVAR_REPLICATED,
+	"Maximum number of ticks between crouch and jump inputs to successfully register a crouchkick. -1 disables crouchkicks.");
+ConVar
 sv_pk_wallrun_timelimit(
 	"sv_pk_wallrun_timelimit",
 	"1.75",
