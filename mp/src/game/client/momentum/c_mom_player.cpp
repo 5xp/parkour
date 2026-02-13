@@ -96,6 +96,15 @@ C_MomentumPlayer::C_MomentumPlayer(): m_pSpecTarget(nullptr)
     m_iWallJumpTick = -1;
     m_iDuckTick = -1;
     m_bWallJumpIsBuffered = false;
+    
+    m_bWallkickDeltaActive = false;
+    m_bWallkickHadJump = false;
+    m_bWallkickHadCrouch = false;
+    m_iWallrunFrictionTicks = 0;
+    m_flPreWallkickSpeed = 0.0f;
+    m_flPostWallkickSpeed = 0.0f;
+    m_iWallkickStartTick = -1;
+    m_iWallkickLastActionTick = -1;
 
     m_bIsWallrunning = false;
     m_flWallrunStartTime = 0.0f;

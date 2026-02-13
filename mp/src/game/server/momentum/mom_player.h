@@ -334,6 +334,12 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
     // Ramp stuff
     void SetRampBoardVelocity(const Vector &vecVel);
     void SetRampLeaveVelocity(const Vector &vecVel);
+    void SetWallkickSpeedDelta(float delta, bool firstie = false, bool crouchkick = false);
+    void StartWallkickSpeedDelta(float preWallrunSpeed);
+    void UpdatePreWallkickSpeed(float preSpeed);
+    void UpdatePostWallkickSpeed(float postWallkickSpeed, bool fromCrouch);
+    void TryFinalizeWallkickSpeedDelta();
+    void ResetWallkickSpeedDelta();
 
     // allows us to add jump/duck/etc buttons if they're toggled
     void PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper) override;
@@ -412,6 +418,15 @@ class CMomentumPlayer : public CBasePlayer, public CGameEventListener, public CM
 
     // for strafe sync
     float m_flLastVelocity;
+
+    bool m_bWallkickDeltaActive;
+    bool m_bWallkickHadJump;
+    bool m_bWallkickHadCrouch;
+    int m_iWallrunFrictionTicks;
+    float m_flPreWallkickSpeed;
+    float m_flPostWallkickSpeed;
+    int m_iWallkickStartTick;
+    int m_iWallkickLastActionTick;
 
     int m_nPrevButtons;
 

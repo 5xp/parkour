@@ -42,7 +42,8 @@ class CHudSpeedMeter : public CHudElement, public vgui::EditablePanel
     bool m_bAutoLayout;
 
     SpeedometerLabel *m_pAbsSpeedoLabel, *m_pHorizSpeedoLabel, *m_pVertSpeedoLabel, *m_pExplosiveJumpVelLabel,
-                     *m_pLastJumpVelLabel, *m_pRampBoardVelLabel, *m_pRampLeaveVelLabel, *m_pStageEnterExitVelLabel;
+        *m_pLastJumpVelLabel, *m_pWallkickSpeedDeltaLabel, *m_pRampBoardVelLabel, *m_pRampLeaveVelLabel,
+        *m_pStageEnterExitVelLabel;
 
     SpeedoLabelList m_LabelOrderList;
 
@@ -57,6 +58,7 @@ class CHudSpeedMeter : public CHudElement, public vgui::EditablePanel
     CPanelAnimationVar(Color, m_bgColor, "BgColor", "Blank");
     CPanelAnimationVar(float, m_fExplosiveJumpVelAlpha, "ExplosiveJumpVelAlpha", "0.0");
     CPanelAnimationVar(float, m_fLastJumpVelAlpha, "LastJumpVelAlpha", "0.0");
+    CPanelAnimationVar(float, m_fWallkickSpeedDeltaAlpha, "WallkickSpeedDeltaAlpha", "0.0");
     CPanelAnimationVar(float, m_fRampBoardVelAlpha, "RampBoardVelAlpha", "0.0");
     CPanelAnimationVar(float, m_fRampLeaveVelAlpha, "RampLeaveVelAlpha", "0.0");
     CPanelAnimationVar(float, m_fStageVelAlpha, "StageVelAlpha", "0.0");

@@ -104,7 +104,7 @@ public:
 
     // Check if player should start wallrunning,
     // i.e. hit a suitable wall while airborn.
-    virtual void    OnWallTouch(Vector &vecWallNormal, trace_t &pm);
+    virtual void    OnWallTouch(Vector &vecWallNormal, trace_t &pm, float preWallrunSpeed);
 
     // Handle wallrun movement
     virtual void    DoWallRunFriction(Vector &velocity, const float friction);

@@ -36,6 +36,7 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     ListenForGameEvent("zone_exit");
     ListenForGameEvent("zone_enter");
     ListenForGameEvent("player_jumped");
+    ListenForGameEvent("wallkick");
     ListenForGameEvent("ramp_leave");
     ListenForGameEvent("ramp_board");
     ListenForGameEvent("player_explosive_hit");
@@ -61,6 +62,9 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     m_pLastJumpVelLabel = new SpeedometerLabel(this, "LastJumpVelocity", SPEEDOMETER_COLORIZE_COMPARISON);
     m_pLastJumpVelLabel->SetFadeOutAnimation("FadeOutLastJumpVel", &m_fLastJumpVelAlpha);
 
+    m_pWallkickSpeedDeltaLabel = new SpeedometerLabel(this, "WallkickSpeedDelta", SPEEDOMETER_COLORIZE_NONE);
+    m_pWallkickSpeedDeltaLabel->SetFadeOutAnimation("FadeOutWallkickSpeedDelta", &m_fWallkickSpeedDeltaAlpha);
+
     m_pRampBoardVelLabel = new SpeedometerLabel(this, "RampBoardVelocity", SPEEDOMETER_COLORIZE_NONE);
     m_pRampBoardVelLabel->SetFadeOutAnimation("FadeOutRampBoardVel", &m_fRampBoardVelAlpha);
 
@@ -76,6 +80,7 @@ CHudSpeedMeter::CHudSpeedMeter(const char *pElementName)
     m_Labels[SPEEDOMETER_LABEL_TYPE_VERT] = m_pVertSpeedoLabel;
     m_Labels[SPEEDOMETER_LABEL_TYPE_EXPLOSIVE] = m_pExplosiveJumpVelLabel;
     m_Labels[SPEEDOMETER_LABEL_TYPE_LASTJUMP] = m_pLastJumpVelLabel;
+    m_Labels[SPEEDOMETER_LABEL_TYPE_WALLKICK] = m_pWallkickSpeedDeltaLabel;
     m_Labels[SPEEDOMETER_LABEL_TYPE_RAMPBOARD] = m_pRampBoardVelLabel;
     m_Labels[SPEEDOMETER_LABEL_TYPE_RAMPLEAVE] = m_pRampLeaveVelLabel;
     m_Labels[SPEEDOMETER_LABEL_TYPE_STAGE] = m_pStageEnterExitVelLabel;
@@ -118,6 +123,24 @@ void CHudSpeedMeter::FireGameEvent(IGameEvent *pEvent)
         return;
     }
 
+    if (FStrEq(pEvent->GetName(), "wallkick"))
+    {
+        m_pWallkickSpeedDeltaLabel->Update(pEvent->GetFloat("delta"));
+        m_pWallkickSpeedDeltaLabel->SetSecondaryText("");
+
+        if (pEvent->GetBool("firstie") && m_pWallkickSpeedDeltaLabel->HasFirstieColor())
+        {
+            m_pWallkickSpeedDeltaLabel->SetPrimaryFgColor(m_pWallkickSpeedDeltaLabel->GetFirstieColor());
+        }
+        if (pEvent->GetBool("crouchkick"))
+        {
+            m_pWallkickSpeedDeltaLabel->SetSecondaryText("*");
+            m_pWallkickSpeedDeltaLabel->SetSecondaryFgColor(m_pWallkickSpeedDeltaLabel->GetPrimaryFgColor());
+        }
+
+        return;
+    }
+
     if (FStrEq(pEvent->GetName(), "ramp_board"))
     {
         m_pRampBoardVelLabel->Update(pEvent->GetFloat("speed"));
@@ -145,6 +168,7 @@ void CHudSpeedMeter::FireGameEvent(IGameEvent *pEvent)
         // disappear when entering start zone
         m_fExplosiveJumpVelAlpha = 0.0f;
         m_fLastJumpVelAlpha = 0.0f;
+        m_fWallkickSpeedDeltaAlpha = 0.0f;
         m_fStageVelAlpha = 0.0f;
         m_fRampBoardVelAlpha = 0.0f;
         m_fRampLeaveVelAlpha = 0.0f;

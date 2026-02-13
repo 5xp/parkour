@@ -129,6 +129,12 @@
     "player_jumped"
     {
     }
+    "wallkick"
+    {
+        "delta" "float"
+        "firstie" "bool"
+        "crouchkick" "bool"
+    }
     "ramp_board"
     {
         "speed" "float"

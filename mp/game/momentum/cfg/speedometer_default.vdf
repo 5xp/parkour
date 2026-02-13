@@ -39,6 +39,11 @@
                 "xpos" "0"
                 "ypos" "0"
             }
+            "WallkickSpeedDelta"
+            {
+                "xpos" "0"
+                "ypos" "0"
+            }
             "RampBoardVelocity"
             {
                 "xpos" "0"
@@ -62,9 +67,10 @@
             "3" "VertSpeedometer"
             "4" "ExplosiveJumpVelocity"
             "5" "LastJumpVelocity"
-            "6" "RampBoardVelocity"
-            "7" "RampLeaveVelocity"
-            "8" "StageEnterExitVelocity"
+            "6" "WallkickSpeedDelta"
+            "7" "RampBoardVelocity"
+            "8" "RampLeaveVelocity"
+            "9" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -94,6 +100,12 @@
         {
             "visible"  "1"
             "colorize" "2"
+            "units"    "0"
+        }
+        "WallkickSpeedDelta"
+        {
+            "visible"  "0"
+            "colorize" "0"
             "units"    "0"
         }
         "RampBoardVelocity"
@@ -131,9 +143,10 @@
             "3" "VertSpeedometer"
             "4" "ExplosiveJumpVelocity"
             "5" "LastJumpVelocity"
-            "6" "RampBoardVelocity"
-            "7" "RampLeaveVelocity"
-            "8" "StageEnterExitVelocity"
+            "6" "WallkickSpeedDelta"
+            "7" "RampBoardVelocity"
+            "8" "RampLeaveVelocity"
+            "9" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -163,6 +176,12 @@
         {
             "visible"  "1"
             "colorize" "2"
+            "units"    "0"
+        }
+        "WallkickSpeedDelta"
+        {
+            "visible"  "0"
+            "colorize" "0"
             "units"    "0"
         }
         "RampBoardVelocity"
@@ -200,9 +219,10 @@
             "3" "VertSpeedometer"
             "4" "ExplosiveJumpVelocity"
             "5" "LastJumpVelocity"
-            "6" "RampBoardVelocity"
-            "7" "RampLeaveVelocity"
-            "8" "StageEnterExitVelocity"
+            "6" "WallkickSpeedDelta"
+            "7" "RampBoardVelocity"
+            "8" "RampLeaveVelocity"
+            "9" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -232,6 +252,12 @@
         {
             "visible"  "1"
             "colorize" "2"
+            "units"    "0"
+        }
+        "WallkickSpeedDelta"
+        {
+            "visible"  "0"
+            "colorize" "0"
             "units"    "0"
         }
         "RampBoardVelocity"
@@ -269,9 +295,10 @@
             "3" "VertSpeedometer"
             "4" "ExplosiveJumpVelocity"
             "5" "LastJumpVelocity"
-            "6" "RampBoardVelocity"
-            "7" "RampLeaveVelocity"
-            "8" "StageEnterExitVelocity"
+            "6" "WallkickSpeedDelta"
+            "7" "RampBoardVelocity"
+            "8" "RampLeaveVelocity"
+            "9" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -324,6 +351,12 @@
             "colorize" "2"
             "units"    "0"
         }
+        "WallkickSpeedDelta"
+        {
+            "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
+        }
         "RampBoardVelocity"
         {
             "visible"  "0"
@@ -359,9 +392,10 @@
             "3" "VertSpeedometer"
             "4" "ExplosiveJumpVelocity"
             "5" "LastJumpVelocity"
-            "6" "RampBoardVelocity"
-            "7" "RampLeaveVelocity"
-            "8" "StageEnterExitVelocity"
+            "6" "WallkickSpeedDelta"
+            "7" "RampBoardVelocity"
+            "8" "RampLeaveVelocity"
+            "9" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -435,6 +469,12 @@
             "colorize" "0"
             "units"    "0"
         }
+        "WallkickSpeedDelta"
+        {
+            "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
+        }
         "RampBoardVelocity"
         {
             "visible"  "0"
@@ -470,9 +510,10 @@
             "3" "VertSpeedometer"
             "4" "ExplosiveJumpVelocity"
             "5" "LastJumpVelocity"
-            "6" "RampBoardVelocity"
-            "7" "RampLeaveVelocity"
-            "8" "StageEnterExitVelocity"
+            "6" "WallkickSpeedDelta"
+            "7" "RampBoardVelocity"
+            "8" "RampLeaveVelocity"
+            "9" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -502,6 +543,12 @@
         {
             "visible"  "1"
             "colorize" "2"
+            "units"    "0"
+        }
+        "WallkickSpeedDelta"
+        {
+            "visible"  "0"
+            "colorize" "0"
             "units"    "0"
         }
         "RampBoardVelocity"
@@ -539,9 +586,10 @@
             "3" "VertSpeedometer"
             "4" "ExplosiveJumpVelocity"
             "5" "LastJumpVelocity"
-            "6" "RampBoardVelocity"
-            "7" "RampLeaveVelocity"
-            "8" "StageEnterExitVelocity"
+            "6" "WallkickSpeedDelta"
+            "7" "RampBoardVelocity"
+            "8" "RampLeaveVelocity"
+            "9" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -572,6 +620,37 @@
             "visible"  "0"
             "colorize" "1"
             "units"    "1"
+        }
+        "WallkickSpeedDelta"
+        {
+            "visible"  "1"
+            "colorize" "1"
+            "units"    "0"
+            "ranges"
+            {
+                "1"
+                {
+                    "min"   "-99999"
+                    "max"   "-1"
+                    "color" "255 106 106 255"
+                }
+                "2"
+                {
+                    "min"   "0"
+                    "max"   "0"
+                    "color" "200 200 200 255"
+                }
+                "3"
+                {
+                    "min"   "1"
+                    "max"   "99999"
+                    "color" "24 150 211 255"
+                }
+            }
+            "firstie"
+            {
+                "color" "255 202 0 255"
+            }
         }
         "RampBoardVelocity"
         {
@@ -608,9 +687,10 @@
             "3" "VertSpeedometer"
             "4" "ExplosiveJumpVelocity"
             "5" "LastJumpVelocity"
-            "6" "RampBoardVelocity"
-            "7" "RampLeaveVelocity"
-            "8" "StageEnterExitVelocity"
+            "6" "WallkickSpeedDelta"
+            "7" "RampBoardVelocity"
+            "8" "RampLeaveVelocity"
+            "9" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -640,6 +720,12 @@
         {
             "visible"  "1"
             "colorize" "2"
+            "units"    "0"
+        }
+        "WallkickSpeedDelta"
+        {
+            "visible"  "0"
+            "colorize" "0"
             "units"    "0"
         }
         "RampBoardVelocity"
@@ -677,9 +763,10 @@
             "3" "VertSpeedometer"
             "4" "ExplosiveJumpVelocity"
             "5" "LastJumpVelocity"
-            "6" "RampBoardVelocity"
-            "7" "RampLeaveVelocity"
-            "8" "StageEnterExitVelocity"
+            "6" "WallkickSpeedDelta"
+            "7" "RampBoardVelocity"
+            "8" "RampLeaveVelocity"
+            "9" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -706,6 +793,12 @@
             "units"    "0"
         }
         "LastJumpVelocity"
+        {
+            "visible"  "0"
+            "colorize" "0"
+            "units"    "0"
+        }
+        "WallkickSpeedDelta"
         {
             "visible"  "0"
             "colorize" "0"
@@ -746,9 +839,10 @@
             "3" "VertSpeedometer"
             "4" "ExplosiveJumpVelocity"
             "5" "LastJumpVelocity"
-            "6" "RampBoardVelocity"
-            "7" "RampLeaveVelocity"
-            "8" "StageEnterExitVelocity"
+            "6" "WallkickSpeedDelta"
+            "7" "RampBoardVelocity"
+            "8" "RampLeaveVelocity"
+            "9" "StageEnterExitVelocity"
         }
         "AbsSpeedometer"
         {
@@ -778,6 +872,12 @@
         {
             "visible"  "1"
             "colorize" "2"
+            "units"    "0"
+        }
+        "WallkickSpeedDelta"
+        {
+            "visible"  "0"
+            "colorize" "0"
             "units"    "0"
         }
         "RampBoardVelocity"

@@ -85,6 +85,163 @@ void CMomentumPlayer::SetRampLeaveVelocity(const Vector &vecVel)
 #endif
 }
 
+ConVar mom_hud_speedometer_wallkick_time(
+    "mom_hud_speedometer_wallkick_time", "0.2", FCVAR_ARCHIVE,
+    "Max wallrun time for wallkick delta to use pre-wallrun speed for comparison. -1 disables.");
+ConVar mom_hud_speedometer_wallkick_behavior(
+    "mom_hud_speedometer_wallkick_behavior", "2", FCVAR_ARCHIVE,
+    "How wallkick delta is measured: 0 = always vs pre-wallrun speed, 1 = show only within wallkick_time, 2 = vs pre-wallrun if within wallkick_time, otherwise vs pre-jump");
+
+void CMomentumPlayer::SetWallkickSpeedDelta(float delta, bool firstie, bool crouchkick)
+{
+    const int behavior = mom_hud_speedometer_wallkick_behavior.GetInt();
+    if (behavior == 1)
+    {
+        const float timeLimit = mom_hud_speedometer_wallkick_time.GetFloat();
+        const float wallrunFrictionTime = m_iWallrunFrictionTicks * gpGlobals->interval_per_tick;
+        if (timeLimit >= 0.0f && wallrunFrictionTime > timeLimit + 0.001f)
+            return;
+    }
+
+#ifdef GAME_DLL
+    IGameEvent *pEvent = gameeventmanager->CreateEvent("wallkick");
+    if (pEvent)
+    {
+        pEvent->SetFloat("delta", delta);
+        pEvent->SetBool("firstie", firstie);
+        pEvent->SetBool("crouchkick", crouchkick);
+        gameeventmanager->FireEvent(pEvent);
+    }
+#endif
+}
+
+void CMomentumPlayer::ResetWallkickSpeedDelta()
+{
+    m_bWallkickDeltaActive = false;
+    m_bWallkickHadJump = false;
+    m_bWallkickHadCrouch = false;
+    m_iWallrunFrictionTicks = 0;
+    m_flPreWallkickSpeed = 0.0f;
+    m_flPostWallkickSpeed = 0.0f;
+    m_iWallkickStartTick = -1;
+    m_iWallkickLastActionTick = -1;
+}
+
+void CMomentumPlayer::StartWallkickSpeedDelta(float preWallrunSpeed)
+{
+    if (m_bWallkickDeltaActive && m_bWallkickHadJump)
+    {
+        const bool firstie = m_iWallrunFrictionTicks == 0;
+        SetWallkickSpeedDelta(m_flPostWallkickSpeed - m_flPreWallkickSpeed, firstie, m_bWallkickHadCrouch);
+    }
+
+    ResetWallkickSpeedDelta();
+
+    m_bWallkickDeltaActive = true;
+    m_flPreWallkickSpeed = preWallrunSpeed;
+    m_flPostWallkickSpeed = m_flPreWallkickSpeed;
+    m_iWallkickStartTick = gpGlobals->tickcount;
+}
+
+void CMomentumPlayer::UpdatePreWallkickSpeed(float preSpeed)
+{
+    if (!m_bWallkickDeltaActive)
+        return;
+
+    if (m_bWallkickHadJump || m_bWallkickHadCrouch)
+        return;
+
+    const int behavior = mom_hud_speedometer_wallkick_behavior.GetInt();
+    if (behavior != 2)
+        return;
+
+    const float timeLimit = mom_hud_speedometer_wallkick_time.GetFloat();
+    if (timeLimit < 0.0f)
+        return;
+
+    const float wallrunFrictionTime = m_iWallrunFrictionTicks * gpGlobals->interval_per_tick;
+    if (wallrunFrictionTime > timeLimit + 0.001f)
+    {
+        m_flPreWallkickSpeed = preSpeed;
+    }
+}
+
+void CMomentumPlayer::UpdatePostWallkickSpeed(float postWallkickSpeed, bool fromCrouch)
+{
+    if (!m_bWallkickDeltaActive)
+        return;
+
+    m_flPostWallkickSpeed = postWallkickSpeed;
+    m_iWallkickLastActionTick = gpGlobals->tickcount;
+
+    if (fromCrouch)
+    {
+        m_bWallkickHadCrouch = true;
+    }
+    else
+    {
+        m_bWallkickHadJump = true;
+    }
+
+    const int crouchJumpBuffer = sv_pk_wallrun_crouch_jump_buffer.GetInt();
+    if (crouchJumpBuffer < 0)
+    {
+        if (m_bWallkickHadJump)
+        {
+            const bool firstie = m_iWallrunFrictionTicks == 0;
+            SetWallkickSpeedDelta(m_flPostWallkickSpeed - m_flPreWallkickSpeed, firstie, m_bWallkickHadCrouch);
+        }
+
+        ResetWallkickSpeedDelta();
+        return;
+    }
+
+    if (m_bWallkickHadJump && m_bWallkickHadCrouch)
+    {
+        const bool firstie = m_iWallrunFrictionTicks == 0;
+        SetWallkickSpeedDelta(m_flPostWallkickSpeed - m_flPreWallkickSpeed, firstie, true);
+        ResetWallkickSpeedDelta();
+    }
+}
+
+void CMomentumPlayer::TryFinalizeWallkickSpeedDelta()
+{
+    if (!m_bWallkickDeltaActive)
+        return;
+
+    const int crouchJumpBuffer = sv_pk_wallrun_crouch_jump_buffer.GetInt();
+    if (crouchJumpBuffer < 0)
+        return;
+
+    if (!m_bWallkickHadJump && gpGlobals->curtime <= m_flCoyoteTime)
+        return;
+
+    if (m_iWallkickLastActionTick < 0)
+    {
+        if (m_bIsWallrunning)
+            return;
+
+        const int ticksSinceStart = gpGlobals->tickcount - m_iWallkickStartTick;
+        if (ticksSinceStart <= crouchJumpBuffer)
+            return;
+
+        ResetWallkickSpeedDelta();
+        return;
+    }
+
+    const int ticksSinceLastAction = gpGlobals->tickcount - m_iWallkickLastActionTick;
+    if (ticksSinceLastAction <= crouchJumpBuffer)
+        return;
+
+    if (m_bWallkickHadJump)
+    {
+        const bool firstie = m_iWallrunFrictionTicks == 0;
+        SetWallkickSpeedDelta(m_flPostWallkickSpeed - m_flPreWallkickSpeed, firstie, m_bWallkickHadCrouch);
+    }
+
+    ResetWallkickSpeedDelta();
+}
+
 void CMomentumPlayer::FireBullet(Vector vecSrc,             // shooting position
                                  const QAngle &shootAngles, // shooting angle
                                  float vecSpread,           // spread vector

@@ -53,6 +53,9 @@ class SpeedometerLabel : public vgui::DoubleLabel
 
     bool GetSupportsSeparateComparison() { return m_bSupportsSeparateComparison; }
     void SetSupportsSeparateComparison(bool bSupportsSeparateComparison) { m_bSupportsSeparateComparison = bSupportsSeparateComparison; }
+
+    bool HasFirstieColor() const { return m_bHasFirstieColor; }
+    Color GetFirstieColor() const { return m_FirstieColor; }
     
     void ApplyKV(KeyValues *pIn);
 
@@ -81,10 +84,12 @@ class SpeedometerLabel : public vgui::DoubleLabel
     bool m_bDoneFading;
 
     Color m_NormalColor, m_IncreaseColor, m_DecreaseColor;
+    Color m_FirstieColor;
 
     RangeList m_vecRangeList;
 
     SpeedometerUnits_t m_eUnitType;
 
     SpeedometerColorize_t m_eColorizeType;
+    bool m_bHasFirstieColor;
 };

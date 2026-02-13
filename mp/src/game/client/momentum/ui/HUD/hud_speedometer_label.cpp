@@ -27,7 +27,8 @@ extern ConVar sv_gravity;
 SpeedometerLabel::SpeedometerLabel(Panel *parent, const char *panelName, SpeedometerColorize_t colorizeType)
     : DoubleLabel(parent, panelName, CFmtStr("%sComparison", panelName).Get()), m_eColorizeType(colorizeType),
       m_pflAlpha(nullptr), m_bSupportsEnergyUnits(false), m_bDoneFading(false),
-      m_eUnitType(SPEEDOMETER_UNITS_UPS), m_bDrawComparison(true), m_bSupportsSeparateComparison(true)
+      m_eUnitType(SPEEDOMETER_UNITS_UPS), m_bDrawComparison(true), m_bSupportsSeparateComparison(true),
+      m_FirstieColor(255, 202, 0, 255), m_bHasFirstieColor(false)
 {
     Reset();
 }
@@ -51,6 +52,10 @@ void SpeedometerLabel::ApplySchemeSettings(IScheme *pScheme)
     m_NormalColor = GetSchemeColor("MOM.Speedometer.Normal", pScheme);
     m_IncreaseColor = GetSchemeColor("MOM.Speedometer.Increase", pScheme);
     m_DecreaseColor = GetSchemeColor("MOM.Speedometer.Decrease", pScheme);
+    if (!m_bHasFirstieColor)
+    {
+        m_FirstieColor = m_NormalColor;
+    }
     Reset();
 }
 
@@ -241,23 +246,32 @@ void SpeedometerLabel::ApplyKV(KeyValues *pIn)
     if (!IsVisible())
         return;
 
+    m_bHasFirstieColor = false;
+
     int colorize = pIn->GetInt("colorize", SPEEDOMETER_COLORIZE_NONE);
     if (colorize == SPEEDOMETER_COLORIZE_RANGE)
     {
-        KeyValues *pRangesKV = pIn->FindKey("ranges");
-        if (!pRangesKV)
-            return;
-
         m_vecRangeList.RemoveAll();
-        FOR_EACH_SUBKEY(pRangesKV, pRangeItem)
+        KeyValues *pRangesKV = pIn->FindKey("ranges");
+        if (pRangesKV)
         {
-            Range_t range;
-            range.min = pRangeItem->GetInt("min", 0);
-            range.max = pRangeItem->GetInt("max", 0);
-            range.color = pRangeItem->GetColor("color");
-            m_vecRangeList.AddToTail(range);
+            FOR_EACH_SUBKEY(pRangesKV, pRangeItem)
+            {
+                Range_t range;
+                range.min = pRangeItem->GetInt("min", 0);
+                range.max = pRangeItem->GetInt("max", 0);
+                range.color = pRangeItem->GetColor("color");
+                m_vecRangeList.AddToTail(range);
+            }
         }
     }
     SetColorizeType(colorize);
     SetUnitType(pIn->GetInt("units", SPEEDOMETER_UNITS_UPS));
+
+    KeyValues *pFirstieKV = pIn->FindKey("firstie");
+    if (pFirstieKV)
+    {
+        m_FirstieColor = pFirstieKV->FindKey("color") ? pFirstieKV->GetColor("color") : Color(255, 215, 0, 255);
+        m_bHasFirstieColor = true;
+    }
 }

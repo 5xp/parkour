@@ -78,6 +78,19 @@
         "wrap"          "0"
         "auto_tall_tocontents" "1"
     }
+    "WallkickSpeedDelta"
+    {
+        "ControlName"   "SpeedometerLabel"
+        "fieldName"	    "WallkickSpeedDelta"
+        "xpos"          "0"
+        "ypos"          "0"
+        "wide"          "120"
+        "textAlignment" "center"
+        "font"          "HudNumbersVerySmall"
+        "FgColor"       "MOM.Speedometer.Normal"
+        "wrap"          "0"
+        "auto_tall_tocontents" "1"
+    }
     "RampBoardVelocity"
     {
         "ControlName"   "SpeedometerLabel"

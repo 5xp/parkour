@@ -35,6 +35,12 @@ public:
     // Ramp stuff
     void SetRampBoardVelocity(const Vector &vecVel);
     void SetRampLeaveVelocity(const Vector &vecVel);
+    void SetWallkickSpeedDelta(float delta, bool firstie = false, bool crouchkick = false);
+    void StartWallkickSpeedDelta(float preWallrunSpeed);
+    void UpdatePreWallkickSpeed(float preSpeed);
+    void UpdatePostWallkickSpeed(float postWallkickSpeed, bool fromCrouch);
+    void TryFinalizeWallkickSpeedDelta();
+    void ResetWallkickSpeedDelta();
 
     // Returns the replay entity that the player is watching (first person only)
     int GetSpecEntIndex() const;
@@ -170,6 +176,15 @@ private:
 
     float m_flStamina;
     bool m_bJustTeleported;
+
+    bool m_bWallkickDeltaActive;
+    bool m_bWallkickHadJump;
+    bool m_bWallkickHadCrouch;
+    int m_iWallrunFrictionTicks;
+    float m_flPreWallkickSpeed;
+    float m_flPostWallkickSpeed;
+    int m_iWallkickStartTick;
+    int m_iWallkickLastActionTick;
 
     CMomRunEntity *m_pSpecTarget;
 
