@@ -185,7 +185,7 @@ sv_pk_jump_height(
 ConVar
 sv_pk_jump_buffer_ticks(
 	"sv_pk_jump_buffer_ticks",
-	"0",
+	"1",
 	FCVAR_NOTIFY | FCVAR_REPLICATED,
 	"Number of ticks to buffer jump input for ground and wall jumps.");
 ConVar
