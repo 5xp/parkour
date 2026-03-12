@@ -22,7 +22,13 @@ For Windows users:
 
 - Default tickrate is 128 for Parkour.
 - `mom_gamemode_override 8` will force Parkour gamemode on non-parkour maps.
-- Try the jump buffer system with `sv_pk_jump_buffer_ticks 1`. This allows you to walljump if you press jump up to 1 tick before hitting the wall.
+
+## Experimental Parkour commands
+
+| title                              | default value | description                                                                                                            |
+|------------------------------------|---------------|------------------------------------------------------------------------------------------------------------------------|
+| `sv_pk_jump_buffer_ticks`          | 1             | Number of ticks to buffer jump input for ground and wall jumps.                                                        |
+| `sv_pk_wallrun_crouch_jump_buffer` | 1             | Maximum number of ticks between crouch and jump inputs to successfully register a crouchkick. -1 disables crouchkicks. |
 
 ## Other info
 
