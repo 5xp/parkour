@@ -17,6 +17,7 @@ For Windows users:
 2. Download the latest release: https://github.com/5xp/parkour/releases
 3. Extract the contents of `mom-pk-XXXX-XX-XX.zip` into the root of your 0.8.7 installation (where hl2.exe is) and allow it to overwrite files.
 4. Launch the game by opening `run_momentum.bat`.
+5. (Recommended) Delete `momentum/cfg/speedometer.vdf` to use the updated speedometer defaults (enables horizontal speed and wallkick speedometer in km/h)
 
 ## Notes
 
