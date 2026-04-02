@@ -301,7 +301,7 @@ void CMomentumGameMovement::WalkMove()
     }
 
     if (g_pGameModeSystem->GameModeIs(GAMEMODE_PARKOUR) &&
-        (mv->m_nButtons & IN_DUCK || (m_pPlayer->m_Local.m_bDucked || m_pPlayer->m_Local.m_bDucking) && !CanUnduck()))
+        (mv->m_nButtons & IN_DUCK || ((m_pPlayer->m_Local.m_bDucked || m_pPlayer->m_Local.m_bDucking) && !CanUnduck())))
     {
         wishspeed = PK_CROUCH_SPEED;
     }
@@ -871,7 +871,7 @@ void CMomentumGameMovement::Friction()
             wishspeed = mv->m_flMaxSpeed;
         }
 
-        if (mv->m_nButtons & IN_DUCK || (m_pPlayer->m_Local.m_bDucked || m_pPlayer->m_Local.m_bDucking) && !CanUnduck())
+        if (mv->m_nButtons & IN_DUCK || ((m_pPlayer->m_Local.m_bDucked || m_pPlayer->m_Local.m_bDucking) && !CanUnduck()))
         {
             wishspeed = PK_CROUCH_SPEED;
         }
